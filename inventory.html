@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Inventory · MiniMart</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/dashboard.css" />
+  <link rel="stylesheet" href="css/responsive.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar" id="appSidebar"></aside>
+    <div class="main-wrap">
+      <header class="topbar" id="appTopbar"></header>
+      <main class="content">
+        <div class="stat-grid" id="inventoryStats"></div>
+        <div class="toolbar no-print">
+          <input type="search" id="invSearch" class="form-control" placeholder="Search inventory..." />
+          <select id="invFilter" class="form-control">
+            <option value="">All stock</option>
+            <option value="low">Low stock</option>
+            <option value="out">Out of stock</option>
+            <option value="ok">Healthy stock</option>
+          </select>
+          <select id="invCategory" class="form-control"></select>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <h3>Stock levels</h3>
+            <span class="text-muted">Sales decrease stock · Purchases increase stock</span>
+          </div>
+          <div class="table-wrap">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Code</th>
+                  <th>Product</th>
+                  <th>Category</th>
+                  <th>Qty</th>
+                  <th>Min</th>
+                  <th>Cost value</th>
+                  <th>Retail value</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody id="inventoryTable"></tbody>
+            </table>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+  <script src="js/storage.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/main.js"></script>
+  <script src="js/inventory.js"></script>
+</body>
+</html>

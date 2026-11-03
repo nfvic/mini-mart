@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Login · MiniMart</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/responsive.css" />
+</head>
+<body>
+  <div class="login-page">
+    <section class="login-hero">
+      <div class="login-brand">
+        <div class="login-mark">MM</div>
+        <div>
+          <strong>MiniMart</strong>
+          <div style="opacity:.8;font-size:.85rem">Computerized Accounting System</div>
+        </div>
+      </div>
+      <div>
+        <h1>Run your mini supermarket with clarity.</h1>
+        <p>
+          Manage sales, stock, purchases, expenses and profit in one professional dashboard —
+          designed for a university project presentation.
+        </p>
+        <div class="login-features">
+          <div class="login-feature">
+            <div><strong>Point of Sale</strong><span>Fast checkout with receipts in KES</span></div>
+          </div>
+          <div class="login-feature">
+            <div><strong>Live inventory</strong><span>Stock moves with every sale and purchase</span></div>
+          </div>
+          <div class="login-feature">
+            <div><strong>Accounting views</strong><span>Revenue, COGS, gross & net profit</span></div>
+          </div>
+        </div>
+      </div>
+      <div style="opacity:.75;font-size:.85rem;position:relative;z-index:1">Nairobi · Kenya · Demo data in LocalStorage</div>
+    </section>
+
+    <section class="login-panel">
+      <div class="login-card">
+        <h2>Sign in</h2>
+        <p class="lead">Use a demonstration account to explore the system.</p>
+
+        <div id="loginError" class="alert alert-error hidden"></div>
+
+        <details class="demo-accounts" open>
+          <summary>Demonstration accounts</summary>
+          <table>
+            <tr><td>Administrator</td><td><code>admin</code> / <code>admin123</code></td></tr>
+            <tr><td>Cashier</td><td><code>cashier</code> / <code>cashier123</code></td></tr>
+            <tr><td>Accountant</td><td><code>accountant</code> / <code>account123</code></td></tr>
+            <tr><td>Storekeeper</td><td><code>storekeeper</code> / <code>store123</code></td></tr>
+          </table>
+        </details>
+
+        <form id="loginForm" novalidate>
+          <div class="form-group">
+            <label for="username">Username</label>
+            <input class="form-control" id="username" name="username" autocomplete="username" required placeholder="Enter username" />
+          </div>
+          <div class="form-group">
+            <label for="password">Password</label>
+            <div class="password-wrap">
+              <input class="form-control" type="password" id="password" name="password" autocomplete="current-password" required placeholder="Enter password" />
+              <button type="button" class="toggle-password" id="togglePassword" aria-label="Show password"></button>
+            </div>
+          </div>
+          <div class="form-row">
+            <label class="checkbox">
+              <input type="checkbox" id="rememberMe" /> Remember me
+            </label>
+            <a href="index.html">Back to home</a>
+          </div>
+          <button type="submit" class="btn btn-primary btn-block">Login</button>
+        </form>
+
+        <p class="login-disclaimer">
+          This is a <strong>frontend demonstration</strong> only. Credentials and sessions are stored in the browser’s LocalStorage and are
+          <strong>not</strong> production-grade authentication.
+        </p>
+      </div>
+    </section>
+  </div>
+
+  <script src="js/storage.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/main.js"></script>
+  <script>
+    mmRedirectIfLoggedIn();
+
+    const toggleBtn = document.getElementById('togglePassword');
+    const passwordInput = document.getElementById('password');
+    toggleBtn.innerHTML = mmIcon('eye');
+    toggleBtn.addEventListener('click', () => {
+      const show = passwordInput.type === 'password';
+      passwordInput.type = show ? 'text' : 'password';
+      toggleBtn.innerHTML = show ? mmIcon('eyeOff') : mmIcon('eye');
+    });
+
+    const remembered = localStorage.getItem('mm_remember_username');
+    if (remembered) {
+      document.getElementById('username').value = remembered;
+      document.getElementById('rememberMe').checked = true;
+    }
+
+    document.getElementById('loginForm').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const err = document.getElementById('loginError');
+      err.classList.add('hidden');
+      const username = document.getElementById('username').value.trim();
+      const password = document.getElementById('password').value;
+      const remember = document.getElementById('rememberMe').checked;
+
+      if (!username || !password) {
+        err.textContent = 'Please enter both username and password.';
+        err.classList.remove('hidden');
+        return;
+      }
+
+      const result = mmLogin(username, password, remember);
+      if (!result.ok) {
+        err.textContent = result.message;
+        err.classList.remove('hidden');
+        return;
+      }
+      window.location.href = 'dashboard.html';
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard · MiniMart</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/dashboard.css" />
+  <link rel="stylesheet" href="css/responsive.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar" id="appSidebar"></aside>
+    <div class="main-wrap">
+      <header class="topbar" id="appTopbar"></header>
+      <main class="content">
+        <div class="quick-actions no-print" id="quickActions"></div>
+        <div class="stat-grid" id="statGrid"></div>
+        <div class="grid grid-2 mb-2">
+          <div class="card chart-card">
+            <div class="card-header"><h3>Daily sales (last 7 days)</h3></div>
+            <canvas id="dailySalesChart" width="560" height="260"></canvas>
+          </div>
+          <div class="card chart-card">
+            <div class="card-header"><h3>Monthly revenue (year to date)</h3></div>
+            <canvas id="monthlyRevenueChart" width="560" height="260"></canvas>
+          </div>
+        </div>
+        <div class="grid grid-3">
+          <div class="card">
+            <div class="card-header"><h3>Recent sales</h3><a href="sales.html">Open POS</a></div>
+            <div id="recentSales" class="list-feed"></div>
+          </div>
+          <div class="card">
+            <div class="card-header"><h3>Recent purchases</h3><a href="purchases.html">View</a></div>
+            <div id="recentPurchases" class="list-feed"></div>
+          </div>
+          <div class="card">
+            <div class="card-header"><h3>Low-stock alerts</h3><a href="inventory.html">Inventory</a></div>
+            <div id="lowStockAlerts" class="alert-list"></div>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+  <script src="js/storage.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/main.js"></script>
+  <script src="js/dashboard.js"></script>
+</body>
+</html>

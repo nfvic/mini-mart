@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Accounting · MiniMart</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/dashboard.css" />
+  <link rel="stylesheet" href="css/responsive.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar" id="appSidebar"></aside>
+    <div class="main-wrap">
+      <header class="topbar" id="appTopbar"></header>
+      <main class="content">
+        <div class="toolbar">
+          <label>From <input type="date" id="accFrom" class="form-control" /></label>
+          <label>To <input type="date" id="accTo" class="form-control" /></label>
+          <button type="button" class="btn btn-secondary" id="btnAccRefresh">Refresh</button>
+        </div>
+
+        <div class="formula-note">
+          <strong>Accounting logic:</strong>
+          <code>Total Revenue</code> = completed sales ·
+          <code>COGS</code> = cost value of products sold ·
+          <code>Gross Profit</code> = Revenue − COGS ·
+          <code>Net Profit</code> = Gross Profit − Operating Expenses.
+          Inventory purchases are <strong>not</strong> treated as operating expenses.
+        </div>
+
+        <div class="finance-grid" id="financeCards"></div>
+
+        <div class="grid grid-2">
+          <div class="card">
+            <div class="card-header"><h3>Income &amp; profit summary</h3></div>
+            <div class="table-wrap">
+              <table class="data-table" id="incomeTable"></table>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-header"><h3>Expense summary</h3></div>
+            <div class="table-wrap">
+              <table class="data-table" id="expenseSummaryTable"></table>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-header"><h3>Sales summary</h3></div>
+            <div id="salesSummary"></div>
+          </div>
+          <div class="card">
+            <div class="card-header"><h3>Purchase &amp; inventory summary</h3></div>
+            <div id="purchaseInventorySummary"></div>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+  <script src="js/storage.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/main.js"></script>
+  <script src="js/accounting.js"></script>
+</body>
+</html>

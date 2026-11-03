@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Expenses · MiniMart</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/dashboard.css" />
+  <link rel="stylesheet" href="css/responsive.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar" id="appSidebar"></aside>
+    <div class="main-wrap">
+      <header class="topbar" id="appTopbar"></header>
+      <main class="content">
+        <div class="stat-grid" id="expenseStats"></div>
+        <div class="toolbar">
+          <input type="search" id="expenseSearch" class="form-control" placeholder="Search expenses..." />
+          <select id="expenseCategoryFilter" class="form-control"></select>
+          <button type="button" class="btn btn-primary" id="btnAddExpense">Record expense</button>
+        </div>
+        <div class="card">
+          <div class="table-wrap">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Description</th>
+                  <th>Category</th>
+                  <th>Payment</th>
+                  <th>Amount</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="expensesTable"></tbody>
+            </table>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <div class="modal" id="expenseModal">
+    <div class="modal-dialog">
+      <form id="expenseForm">
+        <div class="modal-header">
+          <h3 id="expenseModalTitle">Record expense</h3>
+          <button type="button" class="icon-btn" data-close-modal="expenseModal">×</button>
+        </div>
+        <div class="modal-body">
+          <input type="hidden" id="expenseId" />
+          <div class="form-group">
+            <label for="expenseDescription">Description</label>
+            <input id="expenseDescription" class="form-control" required />
+          </div>
+          <div class="grid grid-2">
+            <div class="form-group">
+              <label for="expenseCategory">Category</label>
+              <select id="expenseCategory" class="form-control" required></select>
+            </div>
+            <div class="form-group">
+              <label for="expenseAmount">Amount (KES)</label>
+              <input type="number" min="0" step="0.01" id="expenseAmount" class="form-control" required />
+            </div>
+          </div>
+          <div class="grid grid-2">
+            <div class="form-group">
+              <label for="expenseDate">Date</label>
+              <input type="date" id="expenseDate" class="form-control" required />
+            </div>
+            <div class="form-group">
+              <label for="expensePayment">Payment method</label>
+              <select id="expensePayment" class="form-control" required></select>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline" data-close-modal="expenseModal">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save expense</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="js/storage.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/main.js"></script>
+  <script src="js/expenses.js"></script>
+</body>
+</html>

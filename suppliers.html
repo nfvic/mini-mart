@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Suppliers · MiniMart</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/dashboard.css" />
+  <link rel="stylesheet" href="css/responsive.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar" id="appSidebar"></aside>
+    <div class="main-wrap">
+      <header class="topbar" id="appTopbar"></header>
+      <main class="content">
+        <div class="toolbar">
+          <input type="search" id="supplierSearch" class="form-control" placeholder="Search suppliers..." />
+          <button type="button" class="btn btn-primary" id="btnAddSupplier">Add supplier</button>
+        </div>
+        <div class="split">
+          <div class="card">
+            <div class="table-wrap">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Name</th>
+                    <th>Phone</th>
+                    <th>Email</th>
+                    <th>Address</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="suppliersTable"></tbody>
+              </table>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-header"><h3>Supplier purchase history</h3></div>
+            <div id="supplierHistory" class="list-feed"></div>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <div class="modal" id="supplierModal">
+    <div class="modal-dialog">
+      <form id="supplierForm">
+        <div class="modal-header">
+          <h3 id="supplierModalTitle">Add supplier</h3>
+          <button type="button" class="icon-btn" data-close-modal="supplierModal">×</button>
+        </div>
+        <div class="modal-body">
+          <input type="hidden" id="supplierId" />
+          <div class="form-group">
+            <label for="supplierName">Supplier name</label>
+            <input id="supplierName" class="form-control" required />
+          </div>
+          <div class="grid grid-2">
+            <div class="form-group">
+              <label for="supplierPhone">Telephone</label>
+              <input id="supplierPhone" class="form-control" required />
+            </div>
+            <div class="form-group">
+              <label for="supplierEmail">Email</label>
+              <input type="email" id="supplierEmail" class="form-control" />
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="supplierAddress">Physical address</label>
+            <input id="supplierAddress" class="form-control" />
+          </div>
+          <div class="form-group">
+            <label for="supplierNotes">Notes</label>
+            <textarea id="supplierNotes" class="form-control" rows="2"></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline" data-close-modal="supplierModal">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="js/storage.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/main.js"></script>
+  <script src="js/suppliers.js"></script>
+</body>
+</html>

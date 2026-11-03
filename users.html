@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Users · MiniMart</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/dashboard.css" />
+  <link rel="stylesheet" href="css/responsive.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar" id="appSidebar"></aside>
+    <div class="main-wrap">
+      <header class="topbar" id="appTopbar"></header>
+      <main class="content">
+        <div class="alert alert-info">
+          User accounts are stored in LocalStorage for demonstration only. Role permissions hide menu items the role cannot access.
+        </div>
+        <div class="toolbar">
+          <button type="button" class="btn btn-primary" id="btnAddUser">Add user</button>
+        </div>
+        <div class="card">
+          <div class="table-wrap">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Full name</th>
+                  <th>Username</th>
+                  <th>Role</th>
+                  <th>Email</th>
+                  <th>Phone</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="usersTable"></tbody>
+            </table>
+          </div>
+        </div>
+        <div class="card mt-2">
+          <div class="card-header"><h3>Role permissions overview</h3></div>
+          <div class="table-wrap">
+            <table class="data-table" id="permissionsTable"></table>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <div class="modal" id="userModal">
+    <div class="modal-dialog">
+      <form id="userForm">
+        <div class="modal-header">
+          <h3 id="userModalTitle">Add user</h3>
+          <button type="button" class="icon-btn" data-close-modal="userModal">×</button>
+        </div>
+        <div class="modal-body">
+          <input type="hidden" id="userId" />
+          <div class="grid grid-2">
+            <div class="form-group">
+              <label for="userFullName">Full name</label>
+              <input id="userFullName" class="form-control" required />
+            </div>
+            <div class="form-group">
+              <label for="userUsername">Username</label>
+              <input id="userUsername" class="form-control" required />
+            </div>
+          </div>
+          <div class="grid grid-2">
+            <div class="form-group">
+              <label for="userRole">Role</label>
+              <select id="userRole" class="form-control" required></select>
+            </div>
+            <div class="form-group">
+              <label for="userPassword">Password</label>
+              <input type="text" id="userPassword" class="form-control" required minlength="6" />
+            </div>
+          </div>
+          <div class="grid grid-2">
+            <div class="form-group">
+              <label for="userEmail">Email</label>
+              <input type="email" id="userEmail" class="form-control" />
+            </div>
+            <div class="form-group">
+              <label for="userPhone">Phone</label>
+              <input id="userPhone" class="form-control" />
+            </div>
+          </div>
+          <label class="checkbox">
+            <input type="checkbox" id="userActive" checked /> Active account
+          </label>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline" data-close-modal="userModal">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save user</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="js/storage.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/main.js"></script>
+  <script src="js/users.js"></script>
+</body>
+</html>

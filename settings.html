@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Settings · MiniMart</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/dashboard.css" />
+  <link rel="stylesheet" href="css/responsive.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar" id="appSidebar"></aside>
+    <div class="main-wrap">
+      <header class="topbar" id="appTopbar"></header>
+      <main class="content">
+        <div class="grid grid-2">
+          <div class="card" id="businessSettingsCard">
+            <div class="card-header"><h3>Business settings</h3></div>
+            <form id="settingsForm">
+              <div class="form-group">
+                <label for="supermarketName">Supermarket name</label>
+                <input id="supermarketName" class="form-control" required />
+              </div>
+              <div class="form-group">
+                <label for="currency">Currency</label>
+                <input id="currency" class="form-control" value="KES" readonly />
+              </div>
+              <div class="grid grid-2">
+                <div class="form-group">
+                  <label for="businessPhone">Phone</label>
+                  <input id="businessPhone" class="form-control" />
+                </div>
+                <div class="form-group">
+                  <label for="businessEmail">Email</label>
+                  <input type="email" id="businessEmail" class="form-control" />
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="businessAddress">Address</label>
+                <input id="businessAddress" class="form-control" />
+              </div>
+              <div class="form-group">
+                <label for="receiptFooter">Receipt footer</label>
+                <textarea id="receiptFooter" class="form-control" rows="2"></textarea>
+              </div>
+              <div class="form-group">
+                <label for="logoFile">Upload logo (optional)</label>
+                <input type="file" id="logoFile" accept="image/*" class="form-control" />
+                <div class="mt-1" id="logoPreview"></div>
+              </div>
+              <button type="submit" class="btn btn-primary">Save settings</button>
+            </form>
+          </div>
+
+          <div class="card" id="profile">
+            <div class="card-header"><h3>My profile</h3></div>
+            <div id="profileDetails" class="mb-2"></div>
+            <form id="passwordForm">
+              <div class="form-group">
+                <label for="currentPassword">Current password</label>
+                <input type="password" id="currentPassword" class="form-control" required />
+              </div>
+              <div class="form-group">
+                <label for="newPassword">New demonstration password</label>
+                <input type="password" id="newPassword" class="form-control" required minlength="6" />
+              </div>
+              <div class="form-group">
+                <label for="confirmPassword">Confirm new password</label>
+                <input type="password" id="confirmPassword" class="form-control" required minlength="6" />
+              </div>
+              <button type="submit" class="btn btn-secondary">Change password</button>
+            </form>
+          </div>
+        </div>
+
+        <div class="card mt-2" id="demoDataCard">
+          <div class="card-header"><h3>Demonstration data</h3></div>
+          <p class="text-muted">
+            Reset restores the original Kenyan sample products, suppliers, customers, sales, purchases and expenses.
+            Your current LocalStorage demo data will be replaced.
+          </p>
+          <button type="button" class="btn btn-danger" id="btnResetDemo">Reset demonstration data</button>
+        </div>
+      </main>
+    </div>
+  </div>
+  <script src="js/storage.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/main.js"></script>
+  <script src="js/settings.js"></script>
+</body>
+</html>

@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Customers · MiniMart</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/dashboard.css" />
+  <link rel="stylesheet" href="css/responsive.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar" id="appSidebar"></aside>
+    <div class="main-wrap">
+      <header class="topbar" id="appTopbar"></header>
+      <main class="content">
+        <div class="toolbar">
+          <input type="search" id="customerSearch" class="form-control" placeholder="Search customers..." />
+          <button type="button" class="btn btn-primary" id="btnAddCustomer">Register customer</button>
+        </div>
+        <div class="split">
+          <div class="card">
+            <div class="table-wrap">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Name</th>
+                    <th>Phone</th>
+                    <th>Email</th>
+                    <th>Type</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="customersTable"></tbody>
+              </table>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-header"><h3>Customer purchase history</h3></div>
+            <div id="customerHistory" class="list-feed"></div>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <div class="modal" id="customerModal">
+    <div class="modal-dialog">
+      <form id="customerForm">
+        <div class="modal-header">
+          <h3 id="customerModalTitle">Register customer</h3>
+          <button type="button" class="icon-btn" data-close-modal="customerModal">×</button>
+        </div>
+        <div class="modal-body">
+          <input type="hidden" id="customerId" />
+          <div class="form-group">
+            <label for="customerName">Customer name</label>
+            <input id="customerName" class="form-control" required />
+          </div>
+          <div class="grid grid-2">
+            <div class="form-group">
+              <label for="customerPhone">Phone number</label>
+              <input id="customerPhone" class="form-control" required />
+            </div>
+            <div class="form-group">
+              <label for="customerEmail">Email</label>
+              <input type="email" id="customerEmail" class="form-control" />
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="customerAddress">Address</label>
+            <input id="customerAddress" class="form-control" />
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline" data-close-modal="customerModal">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="js/storage.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/main.js"></script>
+  <script src="js/customers.js"></script>
+</body>
+</html>

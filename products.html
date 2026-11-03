@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Products · MiniMart</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/dashboard.css" />
+  <link rel="stylesheet" href="css/responsive.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar" id="appSidebar"></aside>
+    <div class="main-wrap">
+      <header class="topbar" id="appTopbar"></header>
+      <main class="content">
+        <div class="toolbar no-print">
+          <input type="search" id="productSearch" class="form-control" placeholder="Search products..." />
+          <select id="categoryFilter" class="form-control"></select>
+          <button type="button" class="btn btn-primary" id="btnAddProduct">Add product</button>
+        </div>
+        <div class="card">
+          <div class="table-wrap">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Code</th>
+                  <th>Name</th>
+                  <th>Category</th>
+                  <th>Buying</th>
+                  <th>Selling</th>
+                  <th>Stock</th>
+                  <th>Min</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="productsTable"></tbody>
+            </table>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <div class="modal" id="productModal">
+    <div class="modal-dialog">
+      <form id="productForm">
+        <div class="modal-header">
+          <h3 id="productModalTitle">Add product</h3>
+          <button type="button" class="icon-btn" data-close-modal="productModal">×</button>
+        </div>
+        <div class="modal-body">
+          <input type="hidden" id="productId" />
+          <div class="grid grid-2">
+            <div class="form-group">
+              <label for="productCode">Product code</label>
+              <input class="form-control" id="productCode" required />
+            </div>
+            <div class="form-group">
+              <label for="productName">Product name</label>
+              <input class="form-control" id="productName" required />
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="productCategory">Category</label>
+            <select class="form-control" id="productCategory" required></select>
+          </div>
+          <div class="grid grid-2">
+            <div class="form-group">
+              <label for="buyingPrice">Buying price (KES)</label>
+              <input class="form-control" type="number" min="0" step="0.01" id="buyingPrice" required />
+            </div>
+            <div class="form-group">
+              <label for="sellingPrice">Selling price (KES)</label>
+              <input class="form-control" type="number" min="0" step="0.01" id="sellingPrice" required />
+            </div>
+          </div>
+          <div class="grid grid-3">
+            <div class="form-group">
+              <label for="stockQty">Stock quantity</label>
+              <input class="form-control" type="number" min="0" step="1" id="stockQty" required />
+            </div>
+            <div class="form-group">
+              <label for="minStock">Minimum stock</label>
+              <input class="form-control" type="number" min="0" step="1" id="minStock" required />
+            </div>
+            <div class="form-group">
+              <label for="productUnit">Unit</label>
+              <input class="form-control" id="productUnit" placeholder="packet, bottle..." />
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline" data-close-modal="productModal">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save product</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="js/storage.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/main.js"></script>
+  <script src="js/products.js"></script>
+</body>
+</html>

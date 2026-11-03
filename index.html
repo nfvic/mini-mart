@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MiniMart Computerized Accounting System</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/dashboard.css" />
+  <link rel="stylesheet" href="css/responsive.css" />
+</head>
+<body class="landing">
+  <nav class="landing-nav">
+    <div class="login-brand">
+      <div class="login-mark">MM</div>
+      <div>
+        <strong>MiniMart</strong>
+        <div class="text-muted" style="font-size:0.8rem">Computerized Accounting System</div>
+      </div>
+    </div>
+    <div class="landing-cta" style="margin:0">
+      <a class="btn btn-primary" href="login.html">Launch System</a>
+    </div>
+  </nav>
+
+  <section class="landing-hero">
+    <div>
+      <h1>MiniMart Computerized Accounting System</h1>
+      <p>
+        A complete frontend demonstration of how a Kenyan mini supermarket can manage sales,
+        purchases, inventory, expenses and financial records — built with HTML, CSS and Vanilla JavaScript.
+      </p>
+      <div class="landing-cta">
+        <a class="btn btn-primary" href="login.html">Sign in to Dashboard</a>
+        <a class="btn btn-secondary" href="login.html">View Demo Accounts</a>
+      </div>
+      <p class="login-disclaimer" style="max-width:520px">
+        University semester project · Browser LocalStorage only · Not production authentication.
+      </p>
+    </div>
+    <div class="landing-panel">
+      <h3 class="section-title">What you can demonstrate</h3>
+      <ul class="text-muted" style="padding-left:18px;margin:12px 0 0;line-height:1.8">
+        <li>Point of Sale with printable receipts</li>
+        <li>Stock updates after sales and purchases</li>
+        <li>Supplier, customer and expense records</li>
+        <li>Gross / net profit and inventory valuation</li>
+        <li>Role-based access for Admin, Cashier, Accountant & Storekeeper</li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="feature-grid">
+    <article class="feature-card">
+      <h3>Sales & POS</h3>
+      <p>Search products, build carts, accept Cash, M-Pesa, Card or Bank transfer, and print receipts.</p>
+    </article>
+    <article class="feature-card">
+      <h3>Inventory Control</h3>
+      <p>Track stock levels, low-stock alerts, out-of-stock items and inventory valuation in KES.</p>
+    </article>
+    <article class="feature-card">
+      <h3>Accounting</h3>
+      <p>Revenue, COGS, gross profit, operating expenses and net profit calculated from live LocalStorage data.</p>
+    </article>
+  </section>
+
+  <footer class="landing-footer">
+    MiniMart Computerized Accounting System · University Project Demonstration
+  </footer>
+
+  <script src="js/storage.js"></script>
+  <script src="js/auth.js"></script>
+  <script>
+    if (mmIsLoggedIn()) window.location.href = 'dashboard.html';
+  </script>
+</body>
+</html>

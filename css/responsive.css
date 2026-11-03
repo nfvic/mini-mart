@@ -1,0 +1,140 @@
+/* Responsive breakpoints */
+
+@media (max-width: 1200px) {
+  .stat-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .finance-grid,
+  .grid-4 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .pos-layout,
+  .split,
+  .landing-hero {
+    grid-template-columns: 1fr;
+  }
+
+  .cart-panel {
+    position: static;
+  }
+}
+
+@media (max-width: 992px) {
+  .login-page {
+    grid-template-columns: 1fr;
+  }
+
+  .login-hero {
+    min-height: 280px;
+    padding: 28px;
+  }
+
+  .login-features {
+    display: none;
+  }
+
+  .sidebar {
+    transform: translateX(-100%);
+  }
+
+  body.sidebar-open .sidebar {
+    transform: translateX(0);
+  }
+
+  .main-wrap {
+    margin-left: 0;
+  }
+
+  .user-meta {
+    display: none;
+  }
+
+  .feature-grid,
+  .grid-3,
+  .grid-2 {
+    grid-template-columns: 1fr;
+  }
+
+  body.sidebar-open::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.35);
+    z-index: 35;
+  }
+}
+
+@media (max-width: 640px) {
+  .content {
+    padding: 16px;
+  }
+
+  .topbar {
+    padding: 0 12px;
+    height: auto;
+    min-height: var(--topbar-h);
+  }
+
+  .page-sub {
+    display: none;
+  }
+
+  .stat-grid,
+  .finance-grid,
+  .grid-4,
+  .grid-3,
+  .grid-2 {
+    grid-template-columns: 1fr;
+  }
+
+  .toolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .toolbar .form-control,
+  .toolbar .input,
+  .toolbar select {
+    max-width: none;
+    min-width: 0;
+    width: 100%;
+  }
+
+  .landing-nav {
+    flex-direction: column;
+    gap: 12px;
+    align-items: flex-start;
+  }
+
+  .modal-dialog {
+    max-height: 95vh;
+  }
+}
+
+@media (min-width: 993px) {
+  body.sidebar-collapsed .sidebar {
+    transform: translateX(0);
+    width: 78px;
+  }
+
+  body.sidebar-collapsed .brand-name,
+  body.sidebar-collapsed .brand-sub,
+  body.sidebar-collapsed .nav-link span:not(.nav-icon),
+  body.sidebar-collapsed .demo-note {
+    display: none;
+  }
+
+  body.sidebar-collapsed .sidebar-brand {
+    justify-content: center;
+  }
+
+  body.sidebar-collapsed .main-wrap {
+    margin-left: 78px;
+  }
+
+  body.sidebar-collapsed .nav-link {
+    justify-content: center;
+  }
+}
