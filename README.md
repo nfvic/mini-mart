@@ -125,3 +125,4 @@ MiniMart/
 - Financial calculations distinguish **sales revenue**, **cost of goods sold** and **operating expenses**.
 - Inventory purchases increase stock and are **not** counted as operating expenses when calculating net profit.
 - All modules share one LocalStorage data layer so the dashboard, reports and accounting pages stay in sync.
+"# mini-mart" 
