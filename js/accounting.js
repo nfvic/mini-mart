@@ -2,8 +2,8 @@
  * Accounting module — revenue, COGS, gross/net profit
  */
 
-document.addEventListener('DOMContentLoaded', () => {
-  if (!mmRequirePage('accounting', 'Accounting')) return;
+document.addEventListener('DOMContentLoaded', async () => {
+  if (!(await mmPreparePage('accounting', 'Accounting'))) return;
 
   const from = document.getElementById('accFrom');
   const to = document.getElementById('accTo');

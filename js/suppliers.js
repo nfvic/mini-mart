@@ -4,8 +4,8 @@
 
 let selectedSupplierId = null;
 
-document.addEventListener('DOMContentLoaded', () => {
-  if (!mmRequirePage('suppliers', 'Supplier Management')) return;
+document.addEventListener('DOMContentLoaded', async () => {
+  if (!(await mmPreparePage('suppliers', 'Supplier Management'))) return;
 
   document.getElementById('supplierSearch').addEventListener('input', renderSuppliers);
   document.getElementById('btnAddSupplier').addEventListener('click', () => openSupplierModal());
@@ -109,7 +109,7 @@ function openSupplierModal(id) {
   mmOpenModal('supplierModal');
 }
 
-function saveSupplier(e) {
+async function saveSupplier(e) {
   e.preventDefault();
   const id = document.getElementById('supplierId').value;
   const name = document.getElementById('supplierName').value.trim();
@@ -120,35 +120,37 @@ function saveSupplier(e) {
   }
 
   const payload = {
-    id: id || mmGenerateId('sup'),
     name,
     phone,
     email: document.getElementById('supplierEmail').value.trim(),
     address: document.getElementById('supplierAddress').value.trim(),
     notes: document.getElementById('supplierNotes').value.trim()
   };
+  if (id) payload.id = id;
 
-  const list = mmGetSuppliers();
-  if (id) {
-    const idx = list.findIndex((s) => s.id === id);
-    list[idx] = payload;
-    mmShowToast('Supplier updated.', 'success');
-  } else {
-    list.push(payload);
-    mmShowToast('Supplier added.', 'success');
+  try {
+    const item = await mmPersist('suppliers', payload, !id);
+    mmSaveSuppliers(mmUpsert(mmGetSuppliers(), item).sort((a, b) => a.name.localeCompare(b.name)));
+    mmShowToast(id ? 'Supplier updated.' : 'Supplier added.', 'success');
+    mmCloseModal('supplierModal');
+    selectedSupplierId = item.id;
+    renderSuppliers();
+  } catch (err) {
+    mmShowToast(err.message, 'error');
   }
-  mmSaveSuppliers(list);
-  mmCloseModal('supplierModal');
-  selectedSupplierId = payload.id;
-  renderSuppliers();
 }
 
-function deleteSupplier(id) {
+async function deleteSupplier(id) {
   const s = mmGetSuppliers().find((x) => x.id === id);
   if (!s) return;
   if (!mmConfirm(`Delete supplier "${s.name}"?`)) return;
-  mmSaveSuppliers(mmGetSuppliers().filter((x) => x.id !== id));
-  if (selectedSupplierId === id) selectedSupplierId = null;
-  mmShowToast('Supplier deleted.', 'success');
-  renderSuppliers();
+  try {
+    await mmRemoveRecord('suppliers', id);
+    mmSaveSuppliers(mmGetSuppliers().filter((x) => x.id !== id));
+    if (selectedSupplierId === id) selectedSupplierId = null;
+    mmShowToast('Supplier deleted.', 'success');
+    renderSuppliers();
+  } catch (err) {
+    mmShowToast(err.message, 'error');
+  }
 }

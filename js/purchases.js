@@ -4,8 +4,8 @@
 
 let purchaseLines = [];
 
-document.addEventListener('DOMContentLoaded', () => {
-  if (!mmRequirePage('purchases', 'Purchase Management')) return;
+document.addEventListener('DOMContentLoaded', async () => {
+  if (!(await mmPreparePage('purchases', 'Purchase Management'))) return;
 
   document.getElementById('purchasePayment').innerHTML = MM_PAYMENT_METHODS.map(
     (m) => `<option value="${m}">${m}</option>`
@@ -155,7 +155,7 @@ function nextPurchaseNo() {
   return 'PO-' + new Date().getFullYear() + '-' + String(n).padStart(3, '0');
 }
 
-function savePurchase(e) {
+async function savePurchase(e) {
   e.preventDefault();
   const supplierId = document.getElementById('purchaseSupplier').value;
   const supplier = mmGetSuppliers().find((s) => s.id === supplierId);
@@ -180,35 +180,34 @@ function savePurchase(e) {
     };
   });
 
-  const total = items.reduce((sum, i) => sum + i.qty * i.buyingPrice, 0);
-  const purchase = {
-    id: mmGenerateId('pur'),
-    purchaseNo: nextPurchaseNo(),
-    supplierId: supplier.id,
-    supplierName: supplier.name,
-    date: document.getElementById('purchaseDate').value || mmTodayISO(),
-    paymentMethod: document.getElementById('purchasePayment').value,
-    notes: document.getElementById('purchaseNotes').value.trim(),
-    items,
-    total
-  };
-
-  // Increase stock & optionally sync buying price
-  items.forEach((item) => {
-    mmUpdateProductStock(item.productId, item.qty);
-    const products = mmGetProducts();
-    const idx = products.findIndex((p) => p.id === item.productId);
-    if (idx !== -1) {
-      products[idx].buyingPrice = item.buyingPrice;
-      mmSaveProducts(products);
+  const submit = e.submitter;
+  if (submit) submit.disabled = true;
+  try {
+    const data = await mmApi('purchases', {
+      method: 'POST',
+      body: {
+        clientRequestId: mmGenerateId('req'),
+        supplierId: supplier.id,
+        date: document.getElementById('purchaseDate').value || mmTodayISO(),
+        paymentMethod: document.getElementById('purchasePayment').value,
+        notes: document.getElementById('purchaseNotes').value.trim(),
+        items: items.map((item) => ({
+          productId: item.productId,
+          qty: item.qty,
+          buyingPrice: item.buyingPrice
+        }))
+      }
+    });
+    if (data.products) mmSaveProducts(data.products);
+    if (data.item) {
+      mmSavePurchases([data.item].concat(mmGetPurchases().filter((row) => row.id !== data.item.id)));
     }
-  });
-
-  const purchases = mmGetPurchases();
-  purchases.push(purchase);
-  mmSavePurchases(purchases);
-
-  mmCloseModal('purchaseModal');
-  mmShowToast('Purchase saved. Stock updated.', 'success');
-  renderPurchases();
+    mmCloseModal('purchaseModal');
+    mmShowToast('Purchase saved. Stock updated.', 'success');
+    renderPurchases();
+  } catch (err) {
+    mmShowToast(err.message, 'error');
+  } finally {
+    if (submit) submit.disabled = false;
+  }
 }

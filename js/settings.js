@@ -2,9 +2,18 @@
  * Settings & profile
  */
 
-document.addEventListener('DOMContentLoaded', () => {
-  const user = mmRequireAuth();
-  if (!user) return;
+document.addEventListener('DOMContentLoaded', async () => {
+  const user = await mmRestoreSession();
+  if (!user) {
+    window.location.href = 'login.html';
+    return;
+  }
+  try {
+    await mmLoadWorkspace();
+  } catch (err) {
+    mmShowToast(err.message || 'Could not load settings.', 'error');
+    return;
+  }
 
   // Settings page is admin-only for business config; profile available to all via hash
   const canSettings = mmCanAccess('settings');
@@ -59,7 +68,7 @@ document.addEventListener('DOMContentLoaded', () => {
     reader.readAsDataURL(file);
   });
 
-  document.getElementById('settingsForm').addEventListener('submit', (e) => {
+  document.getElementById('settingsForm').addEventListener('submit', async (e) => {
     e.preventDefault();
     if (!canSettings) {
       mmShowToast('Only administrators can change business settings.', 'error');
@@ -76,12 +85,17 @@ document.addEventListener('DOMContentLoaded', () => {
     };
     const logo = document.getElementById('logoPreview').dataset.logo;
     if (logo) next.logoDataUrl = logo;
-    mmSaveSettings(next);
-    mmShowToast('Settings saved.', 'success');
-    setTimeout(() => location.reload(), 600);
+    try {
+      const data = await mmApi('settings', { method: 'PUT', body: next });
+      mmSaveSettings(data.settings || next);
+      mmShowToast('Settings saved.', 'success');
+      setTimeout(() => location.reload(), 600);
+    } catch (err) {
+      mmShowToast(err.message, 'error');
+    }
   });
 
-  document.getElementById('passwordForm').addEventListener('submit', (e) => {
+  document.getElementById('passwordForm').addEventListener('submit', async (e) => {
     e.preventDefault();
     const currentPassword = document.getElementById('currentPassword').value;
     const newPassword = document.getElementById('newPassword').value;
@@ -90,19 +104,61 @@ document.addEventListener('DOMContentLoaded', () => {
       mmShowToast('New passwords do not match.', 'error');
       return;
     }
-    const result = mmChangePassword(user.id, currentPassword, newPassword);
+    const result = await mmChangePassword(currentPassword, newPassword);
     mmShowToast(result.message, result.ok ? 'success' : 'error');
     if (result.ok) e.target.reset();
   });
 
-  document.getElementById('btnResetDemo')?.addEventListener('click', () => {
+  document.getElementById('btnResetDemo')?.addEventListener('click', async () => {
     if (!canSettings) return;
     if (!mmConfirm('Reset all demonstration data to the original sample set?')) return;
-    const session = mmGetSession();
-    mmResetDemoData();
-    if (session) mmSaveSession(session);
-    mmShowToast('Demonstration data restored.', 'success');
-    setTimeout(() => (window.location.href = 'dashboard.html'), 700);
+    try {
+      await mmResetDemoData();
+      mmShowToast('Demonstration data restored.', 'success');
+      setTimeout(() => (window.location.href = 'dashboard.html'), 700);
+    } catch (err) {
+      mmShowToast(err.message, 'error');
+    }
+  });
+
+  document.getElementById('btnExportLegacy')?.addEventListener('click', () => {
+    try {
+      mmDownloadLegacyExport();
+      mmShowToast('Legacy browser data exported.', 'success');
+    } catch (err) {
+      mmShowToast(err.message || 'Could not export legacy data.', 'error');
+    }
+  });
+
+  document.getElementById('btnImportLegacy')?.addEventListener('click', async () => {
+    const file = document.getElementById('legacyDataFile')?.files?.[0];
+    if (!file) {
+      mmShowToast('Choose a legacy JSON export file first.', 'error');
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      mmShowToast('The import file must be 5 MB or smaller.', 'error');
+      return;
+    }
+    let data;
+    try {
+      data = JSON.parse(await file.text());
+    } catch (err) {
+      mmShowToast('The selected file is not valid JSON.', 'error');
+      return;
+    }
+    if (!mmConfirm('Import legacy business records? Existing database records will be retained, and historical stock movements will not be replayed.')) {
+      return;
+    }
+    try {
+      const result = await mmApi('migration', { method: 'POST', body: data });
+      await mmLoadWorkspace();
+      const imported = Object.values(result.result || {}).reduce((sum, count) => sum + Number(count || 0), 0);
+      mmShowToast(`Imported ${imported} new records. Existing records were left unchanged.`, 'success');
+      document.getElementById('legacyDataFile').value = '';
+    } catch (err) {
+      mmShowToast(err.message || 'Legacy data import failed.', 'error');
+    }
   });
 
   if (window.location.hash === '#profile') {

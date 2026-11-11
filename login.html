@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Login · MiniMart</title>
+  <script src="js/theme.js"></script>
   <link rel="stylesheet" href="css/style.css" />
   <link rel="stylesheet" href="css/responsive.css" />
 </head>
@@ -35,10 +36,11 @@
           </div>
         </div>
       </div>
-      <div style="opacity:.75;font-size:.85rem;position:relative;z-index:1">Nairobi · Kenya · Demo data in LocalStorage</div>
+      <div style="opacity:.75;font-size:.85rem;position:relative;z-index:1">Nairobi · Kenya · Accounts stored in PostgreSQL</div>
     </section>
 
     <section class="login-panel">
+      <button type="button" class="icon-btn login-theme-toggle" data-theme-toggle title="Toggle colour theme" aria-label="Toggle colour theme"></button>
       <div class="login-card">
         <h2>Sign in</h2>
         <p class="lead">Use a demonstration account to explore the system.</p>
@@ -77,8 +79,7 @@
         </form>
 
         <p class="login-disclaimer">
-          This is a <strong>frontend demonstration</strong> only. Credentials and sessions are stored in the browser’s LocalStorage and are
-          <strong>not</strong> production-grade authentication.
+          Sign-in is checked by the PHP server. Passwords are stored as hashes in PostgreSQL, and the session stays in an HTTP-only cookie.
         </p>
       </div>
     </section>
@@ -88,7 +89,9 @@
   <script src="js/auth.js"></script>
   <script src="js/main.js"></script>
   <script>
-    mmRedirectIfLoggedIn();
+    mmRestoreSession().then((user) => {
+      if (user) window.location.href = 'dashboard.html';
+    });
 
     const toggleBtn = document.getElementById('togglePassword');
     const passwordInput = document.getElementById('password');
@@ -105,7 +108,7 @@
       document.getElementById('rememberMe').checked = true;
     }
 
-    document.getElementById('loginForm').addEventListener('submit', (e) => {
+    document.getElementById('loginForm').addEventListener('submit', async (e) => {
       e.preventDefault();
       const err = document.getElementById('loginError');
       err.classList.add('hidden');
@@ -119,7 +122,7 @@
         return;
       }
 
-      const result = mmLogin(username, password, remember);
+      const result = await mmLogin(username, password, remember);
       if (!result.ok) {
         err.textContent = result.message;
         err.classList.remove('hidden');

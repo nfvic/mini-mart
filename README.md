@@ -1,128 +1,98 @@
 # MiniMart Computerized Accounting System
 
-A complete **frontend-only** university semester project that demonstrates how a Kenyan mini supermarket can manage sales, purchases, inventory, expenses and financial records using a computerized accounting system.
+MiniMart is a vanilla HTML/CSS/JavaScript application backed by a PHP 8.2 REST API and Supabase PostgreSQL. Business records are read and written through the PHP API; the browser does not persist business records or passwords. It stores a theme preference, an optional remembered username, and a per-tab CSRF token.
 
-Built with **HTML5**, **CSS3** and ** JavaScript**. All data is stored in the browser using **LocalStorage**.
+The accounting views calculate sales revenue, cost of goods sold (COGS), gross profit, operating expenses, net profit, and inventory valuation. This is not a double-entry accounting ledger.
 
-> This is a demonstration system for academic presentation. Login authentication is simulated in JavaScript and is **not** production-grade security.
+## Requirements
 
----
+- PHP 8.2 or newer
+- PHP extensions `pdo_pgsql` and `openssl`
+- A Supabase project with PostgreSQL connection details
+- A modern browser
 
-## Features
+## Supabase setup
 
-- Professional login with role-based demo accounts
-- Dashboard with live statistics and charts
-- Product, inventory, supplier and customer management
-- Point of Sale (POS) with printable receipts
-- Purchase recording with automatic stock increase
-- Expense tracking (operating expenses only)
-- Accounting views: Revenue, COGS, Gross Profit, Net Profit
-- Reports with date filters, print and CSV export
-- User management and business settings
-- Sample Kenyan supermarket data in **KES**
+1. In the Supabase SQL Editor, run `database/schema.sql`. It is safe to rerun to apply schema and role-permission updates.
+2. On a fresh demonstration database only, run `database/seed_data.sql` to add sample business records. This script replaces business sample records; do not rerun it on a database containing records you need to keep.
+3. The four demonstration users are created by `schema.sql`.
+4. Use your project's PostgreSQL connection values. The PHP backend connects directly over TLS; it does not use a Supabase service-role key or the browser-facing Data API.
 
----
+The schema enables Row Level Security and revokes the `anon` and `authenticated` Data API roles. The PHP backend uses its PostgreSQL connection and must enforce application permissions itself.
 
-## Demo login accounts
+## Environment configuration
 
-| Role | Username | Password |
-|------|----------|----------|
+Copy the example file and set the values locally:
+
+```powershell
+Copy-Item .env.example .env
+```
+
+Set these variables in `.env`:
+
+| Variable | Description |
+|---|---|
+| `SUPABASE_DB_HOST` | Supabase PostgreSQL host |
+| `SUPABASE_DB_PORT` | PostgreSQL port, normally `5432` |
+| `SUPABASE_DB_NAME` | Database name, normally `postgres` |
+| `SUPABASE_DB_USER` | Database user from Supabase connection details |
+| `SUPABASE_DB_PASSWORD` | Database password; never place it in frontend files |
+| `APP_ENV` | Use `development` locally and `production` when deployed |
+| `APP_SECRET` | Reserved for future application-specific signing; keep it private and generate a long random value |
+
+`.env` and `config/config.php` are ignored by Git. Do not commit credentials. The example configuration contains placeholders only.
+
+## Run locally
+
+Open PowerShell in the project directory and start PHP's built-in development server:
+
+```powershell
+php -S 127.0.0.1:8000 -t .
+```
+
+Open `http://127.0.0.1:8000/` in your browser. Check the API/database connection at `http://127.0.0.1:8000/api/index.php?r=health`. Do not use `file://` or a static-only Live Server for normal operation; neither runs PHP.
+
+For deployments, use a supported PHP web server, HTTPS, a valid Supabase database connection, a non-development `APP_ENV`, and appropriate PHP request-size limits (at least 8 MB if importing data). Keep the `.env` file outside public web access where the host permits.
+
+## Demonstration users
+
+The schema seeds these accounts for local demonstration:
+
+| Role | Username | Initial password |
+|---|---|---|
 | Administrator | `admin` | `admin123` |
 | Cashier | `cashier` | `cashier123` |
 | Accountant | `accountant` | `account123` |
 | Storekeeper | `storekeeper` | `store123` |
 
----
+Change all demonstration passwords before deployment. User passwords are stored as hashes; never reuse these initial credentials in a real environment.
 
-## How to open and run (Google Chrome + VS Code Live Server)
+## Modules and permissions
 
-1. Install **Visual Studio Code** if you do not already have it.
-2. Install the **Live Server** extension by Ritwick Dey:
-   - Open VS Code
-   - Go to Extensions (`Ctrl+Shift+X`)
-   - Search for `Live Server`
-   - Click **Install**
-3. In VS Code, open the project folder:
-   - **File → Open Folder…**
-   - Select the `MiniMart` folder (the folder that contains `index.html` and `login.html`)
-4. In the Explorer pane, right-click `index.html` or `login.html`
-5. Choose **Open with Live Server**
-6. Google Chrome should open automatically at an address like:
-   - `http://127.0.0.1:5500/index.html`
-7. Click **Launch System** / go to the login page and sign in with a demo account.
+The application includes dashboard, POS/sales, products, inventory, purchases, suppliers, customers, expenses, accounting, reports, user management, and business settings. The PHP API checks session authentication and role permissions; client-side navigation restrictions are not the security boundary. Cashiers do not receive purchase/expense records or product/sale cost prices. The system uses PHP sessions, HTTP-only cookies, session regeneration on login, CSRF tokens, prepared statements, and login-attempt throttling.
 
-### Alternative (without Live Server)
+## Theme
 
-You can also double-click `index.html` or `login.html` to open the files directly in Chrome. Live Server is recommended because it refreshes the page automatically when you edit files.
+The shared sun/moon toggle is available on the public landing page, login page, and application pages. The first visit follows the operating-system theme; a chosen light/dark setting is saved in browser LocalStorage.
 
----
+## Import existing browser data
 
-## Suggested presentation flow
+1. Open the upgraded application in the same browser profile and origin (scheme, hostname, and port) that contains the older MiniMart LocalStorage data.
+2. Sign in as Administrator and open **Settings → Demonstration data**.
+3. Choose **Export legacy browser data** and save the JSON file somewhere safe.
+4. Select that JSON file and choose **Import selected data**.
 
-1. Log in as **Administrator**
-2. Show the **Dashboard** (sales, profit, low stock)
-3. Open **POS / Sales**, complete a sale and print a receipt
-4. Show **Inventory** stock reduced after the sale
-5. Record a **Purchase** and show stock increased
-6. Open **Accounting** and explain Revenue − COGS = Gross Profit, then Gross − Expenses = Net Profit
-7. Generate a **Profit & Loss** report and export CSV
-8. Log out and log in as **Cashier** to show restricted menu access
+The importer adds legacy products, suppliers, customers, sales, purchases, expenses, and settings. Existing records are retained; duplicate records are skipped. Historical sales and purchases are marked as already applied, so their stock movements are not repeated. User accounts and passwords are not imported. Back up the JSON file before importing; the import is transactional and will roll back if a record is invalid. The importer accepts files up to 5 MB.
 
----
+## Reset demonstration data
 
-## Resetting sample data
+**Settings → Reset demonstration data** replaces business sample records with the included seed dataset. Export any legacy records first. User accounts are not deleted. Do not use the reset option on a live business database.
 
-Administrators can reset the original demonstration data from **Settings → Reset demonstration data**.
+## Development and security notes
 
----
-
-## Project structure
-
-```
-MiniMart/
-├── index.html
-├── login.html
-├── dashboard.html
-├── products.html
-├── inventory.html
-├── sales.html
-├── purchases.html
-├── suppliers.html
-├── customers.html
-├── expenses.html
-├── accounting.html
-├── reports.html
-├── users.html
-├── settings.html
-├── css/
-│   ├── style.css
-│   ├── dashboard.css
-│   └── responsive.css
-├── js/
-│   ├── storage.js
-│   ├── auth.js
-│   ├── main.js
-│   ├── dashboard.js
-│   ├── products.js
-│   ├── inventory.js
-│   ├── sales.js
-│   ├── purchases.js
-│   ├── suppliers.js
-│   ├── customers.js
-│   ├── expenses.js
-│   ├── accounting.js
-│   ├── reports.js
-│   ├── users.js
-│   └── settings.js
-└── README.md
-```
-
----
-
-## Notes for markers / examiners
-
-- No PHP, Python, Java, C++, MySQL or backend server is required.
-- Financial calculations distinguish **sales revenue**, **cost of goods sold** and **operating expenses**.
-- Inventory purchases increase stock and are **not** counted as operating expenses when calculating net profit.
-- All modules share one LocalStorage data layer so the dashboard, reports and accounting pages stay in sync.
-"# mini-mart" 
+- The PHP API is under `api/`; configuration examples are under `config/`; SQL scripts are under `database/`.
+- Database credentials are server-side only. Do not put database passwords or Supabase service-role keys in HTML or JavaScript.
+- Validate deployment configuration, enable HTTPS, change seeded user passwords, and use an appropriately restricted database role.
+- Sales and purchases update inventory in database transactions. A sale checks stock under row locks and request IDs make transaction retries idempotent.
+- Purchases are inventory acquisitions, not operating expenses. Profit is reported as revenue minus COGS minus operating expenses.
+- The project has not been independently audited or tested against a live Supabase project; configure a non-production database and verify the setup before deployment.

@@ -1,112 +1,78 @@
 /**
- * MiniMart authentication (frontend demo only)
- * Credentials and sessions are stored in LocalStorage — NOT secure for production.
+ * MiniMart authentication against the PHP session API.
  */
 
-function mmGetSession() {
-  return mmGet(MM_STORAGE_KEYS.SESSION, null);
-}
-
-function mmSaveSession(session) {
-  mmSet(MM_STORAGE_KEYS.SESSION, session);
-}
-
-function mmClearSession() {
-  mmRemove(MM_STORAGE_KEYS.SESSION);
+function mmGetCurrentUser() {
+  return MM_STATE.user || null;
 }
 
 function mmIsLoggedIn() {
-  const session = mmGetSession();
-  return !!(session && session.userId);
+  return !!mmGetCurrentUser();
 }
 
-function mmGetCurrentUser() {
-  const session = mmGetSession();
-  if (!session) return null;
-  const user = mmGetUserById(session.userId);
-  if (!user || user.active === false) return null;
-  return user;
+async function mmRestoreSession() {
+  try {
+    const data = await mmApi('session');
+    MM_STATE.user = data.user || null;
+    return MM_STATE.user;
+  } catch (e) {
+    MM_STATE.user = null;
+    return null;
+  }
 }
 
-function mmLogin(username, password, remember) {
-  const user = mmGetUserByUsername(username);
-  if (!user) {
-    return { ok: false, message: 'Invalid username or password.' };
+async function mmLogin(username, password, remember) {
+  try {
+    const data = await mmApi('login', {
+      method: 'POST',
+      body: { username, password, remember: !!remember }
+    });
+    MM_STATE.user = data.user;
+    if (remember) {
+      localStorage.setItem('mm_remember_username', data.user.username);
+    } else {
+      localStorage.removeItem('mm_remember_username');
+    }
+    return { ok: true, user: data.user };
+  } catch (e) {
+    return { ok: false, message: e.message || 'Invalid username or password.' };
   }
-  if (user.active === false) {
-    return { ok: false, message: 'This account is disabled. Contact the administrator.' };
-  }
-  if (String(user.password) !== String(password)) {
-    return { ok: false, message: 'Invalid username or password.' };
-  }
-
-  const session = {
-    userId: user.id,
-    username: user.username,
-    role: user.role,
-    fullName: user.fullName,
-    loginAt: new Date().toISOString(),
-    remember: !!remember
-  };
-  mmSaveSession(session);
-
-  if (remember) {
-    localStorage.setItem('mm_remember_username', user.username);
-  } else {
-    localStorage.removeItem('mm_remember_username');
-  }
-
-  return { ok: true, user, session };
 }
 
-function mmLogout() {
-  mmClearSession();
+async function mmLogout() {
+  try {
+    await mmApi('logout', { method: 'POST', body: {} });
+  } catch (e) {
+    /* still leave the screen if the session is already gone */
+  }
+  MM_STATE.user = null;
+  MM_STATE.csrf = '';
+  try {
+    sessionStorage.removeItem('mm_csrf');
+  } catch (err) {
+    /* ignore */
+  }
   window.location.href = 'login.html';
-}
-
-function mmRequireAuth(allowedRoles) {
-  if (!mmIsLoggedIn()) {
-    window.location.href = 'login.html';
-    return null;
-  }
-  const user = mmGetCurrentUser();
-  if (!user) {
-    mmClearSession();
-    window.location.href = 'login.html';
-    return null;
-  }
-  if (allowedRoles && allowedRoles.length && !allowedRoles.includes(user.role)) {
-    mmShowToast('You do not have permission to access this page.', 'error');
-    window.location.href = 'dashboard.html';
-    return null;
-  }
-  return user;
 }
 
 function mmCanAccess(pageKey) {
   const user = mmGetCurrentUser();
   if (!user) return false;
+  if (Array.isArray(user.permissions) && user.permissions.length) {
+    return user.permissions.includes(pageKey);
+  }
   const perms = MM_ROLE_PERMISSIONS[user.role] || [];
   return perms.includes(pageKey);
 }
 
-function mmRedirectIfLoggedIn() {
-  if (mmIsLoggedIn()) {
-    window.location.href = 'dashboard.html';
+async function mmChangePassword(currentPassword, newPassword) {
+  try {
+    await mmApi('password', {
+      method: 'POST',
+      body: { currentPassword, newPassword }
+    });
+    return { ok: true, message: 'Password updated successfully.' };
+  } catch (e) {
+    return { ok: false, message: e.message || 'Could not update the password.' };
   }
-}
-
-function mmChangePassword(userId, currentPassword, newPassword) {
-  const users = mmGetUsers();
-  const idx = users.findIndex((u) => u.id === userId);
-  if (idx === -1) return { ok: false, message: 'User not found.' };
-  if (String(users[idx].password) !== String(currentPassword)) {
-    return { ok: false, message: 'Current password is incorrect.' };
-  }
-  if (!newPassword || newPassword.length < 6) {
-    return { ok: false, message: 'New password must be at least 6 characters.' };
-  }
-  users[idx].password = newPassword;
-  mmSaveUsers(users);
-  return { ok: true, message: 'Password updated successfully.' };
 }

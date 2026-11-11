@@ -2,6 +2,7 @@
 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Outfit:wght@500;600;700&display=swap');
 
 :root {
+  color-scheme: light;
   --navy: #1e3a5f;
   --navy-dark: #13253d;
   --navy-light: #2a4d73;
@@ -161,6 +162,7 @@ img {
 }
 
 .login-panel {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -917,6 +919,181 @@ table.data-table {
 
 .text-danger {
   color: var(--danger);
+}
+
+/* ---------- Dark theme ---------- */
+html[data-theme='dark'] {
+  color-scheme: dark;
+  --navy: #a7c7ff;
+  --navy-dark: #0c1522;
+  --navy-light: #20334b;
+  --green: #80d7a4;
+  --green-light: #9be8ba;
+  --green-soft: #1d3b2e;
+  --bg: #101720;
+  --surface: #182331;
+  --surface-raised: #202e3d;
+  --surface-sunken: #141e2a;
+  --border: #344456;
+  --text: #e7eef6;
+  --muted: #a9b8c8;
+  --danger: #ff818b;
+  --warning: #f2c56b;
+  --success: #80d7a4;
+  --info: #a7c7ff;
+  --shadow: 0 8px 24px rgba(0, 0, 0, 0.24);
+}
+
+html[data-theme='dark'] body,
+html[data-theme='dark'] .login-page,
+html[data-theme='dark'] .login-panel {
+  background: var(--bg);
+  color: var(--text);
+}
+
+html[data-theme='dark'] .login-card,
+html[data-theme='dark'] .card,
+html[data-theme='dark'] .topbar,
+html[data-theme='dark'] .icon-btn,
+html[data-theme='dark'] .user-menu,
+html[data-theme='dark'] .user-dropdown,
+html[data-theme='dark'] .modal-dialog,
+html[data-theme='dark'] .toast,
+html[data-theme='dark'] .login-panel .demo-accounts,
+html[data-theme='dark'] .login-panel table,
+html[data-theme='dark'] .login-panel th,
+html[data-theme='dark'] .login-panel td {
+  background-color: var(--surface);
+  color: var(--text);
+}
+
+html[data-theme='dark'] .topbar {
+  background: rgba(24, 35, 49, 0.94);
+}
+
+html[data-theme='dark'] .form-control,
+html[data-theme='dark'] .input,
+html[data-theme='dark'] select,
+html[data-theme='dark'] textarea,
+html[data-theme='dark'] .qty-controls button,
+html[data-theme='dark'] .report-tab {
+  background-color: var(--surface-sunken);
+  color: var(--text);
+  border-color: var(--border);
+}
+
+html[data-theme='dark'] input::placeholder,
+html[data-theme='dark'] textarea::placeholder {
+  color: var(--muted);
+}
+
+html[data-theme='dark'] option {
+  background: var(--surface);
+  color: var(--text);
+}
+
+html[data-theme='dark'] .data-table th,
+html[data-theme='dark'] .data-table tbody tr:hover,
+html[data-theme='dark'] .user-dropdown a:hover,
+html[data-theme='dark'] .user-dropdown button:hover,
+html[data-theme='dark'] .toggle-password:hover,
+html[data-theme='dark'] .btn-secondary {
+  background-color: var(--surface-raised);
+  color: var(--text);
+}
+
+html[data-theme='dark'] .data-table td,
+html[data-theme='dark'] .data-table th,
+html[data-theme='dark'] .modal-header,
+html[data-theme='dark'] .modal-footer,
+html[data-theme='dark'] .sidebar-brand,
+html[data-theme='dark'] .sidebar-footer {
+  border-color: var(--border);
+}
+
+html[data-theme='dark'] .feed-item,
+html[data-theme='dark'] .product-tile,
+html[data-theme='dark'] .cart-line,
+html[data-theme='dark'] .landing-panel,
+html[data-theme='dark'] .feature-card,
+html[data-theme='dark'] .stat-card,
+html[data-theme='dark'] .finance-card {
+  background: var(--surface);
+  color: var(--text);
+  border-color: var(--border);
+}
+
+html[data-theme='dark'] .alert-item,
+html[data-theme='dark'] .pill-warning,
+html[data-theme='dark'] .login-disclaimer {
+  background: #3a321d;
+  color: #f2d794;
+  border-color: #67562c;
+}
+
+html[data-theme='dark'] .alert-item.danger,
+html[data-theme='dark'] .alert-error,
+html[data-theme='dark'] .pill-danger {
+  background: #40252b;
+  color: #ffb0b7;
+  border-color: #75424a;
+}
+
+html[data-theme='dark'] .alert-success {
+  background: #1d3b2e;
+  color: #a9ebc2;
+  border-color: #32644b;
+}
+
+html[data-theme='dark'] .alert-info,
+html[data-theme='dark'] .pill-info {
+  background: #233750;
+  color: #c1d9ff;
+  border-color: #3c5979;
+}
+
+html[data-theme='dark'] .formula-note {
+  background: #1d3b2e;
+  color: #b4e9c7;
+  border-color: #32644b;
+}
+
+html[data-theme='dark'] .formula-note code {
+  background: rgba(0, 0, 0, 0.22);
+}
+
+html[data-theme='dark'] .landing {
+  background:
+    radial-gradient(circle at 15% 20%, rgba(128, 215, 164, 0.08), transparent 35%),
+    radial-gradient(circle at 85% 10%, rgba(167, 199, 255, 0.08), transparent 30%),
+    linear-gradient(180deg, #141e2a, #101720);
+}
+
+html[data-theme='dark'] .landing-footer {
+  border-color: var(--border);
+}
+
+html[data-theme='dark'] .icon-btn svg,
+html[data-theme='dark'] [data-theme-toggle] svg {
+  width: 18px;
+  height: 18px;
+}
+
+.login-theme-toggle {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  z-index: 2;
+}
+
+html[data-theme='dark'] body,
+html[data-theme='dark'] .card,
+html[data-theme='dark'] .topbar,
+html[data-theme='dark'] .form-control,
+html[data-theme='dark'] .input,
+html[data-theme='dark'] .modal-dialog,
+html[data-theme='dark'] .toast {
+  transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
 }
 
 .text-success {

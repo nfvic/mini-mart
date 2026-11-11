@@ -2,8 +2,8 @@
  * Inventory management view
  */
 
-document.addEventListener('DOMContentLoaded', () => {
-  if (!mmRequirePage('inventory', 'Inventory Management')) return;
+document.addEventListener('DOMContentLoaded', async () => {
+  if (!(await mmPreparePage('inventory', 'Inventory Management'))) return;
 
   document.getElementById('invCategory').innerHTML =
     '<option value="">All categories</option>' +

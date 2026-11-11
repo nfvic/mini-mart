@@ -437,3 +437,41 @@
   font-size: 0.85rem;
   border-top: 1px solid var(--border);
 }
+
+html[data-theme='dark'] .stat-card,
+html[data-theme='dark'] .feed-item,
+html[data-theme='dark'] .alert-item,
+html[data-theme='dark'] .product-tile,
+html[data-theme='dark'] .cart-line,
+html[data-theme='dark'] .qty-controls button,
+html[data-theme='dark'] .finance-card,
+html[data-theme='dark'] .report-tab,
+html[data-theme='dark'] .landing-panel,
+html[data-theme='dark'] .feature-card {
+  background-color: var(--surface);
+  color: var(--text);
+  border-color: var(--border);
+}
+
+html[data-theme='dark'] .feed-item,
+html[data-theme='dark'] .cart-line {
+  background-color: var(--surface-sunken);
+}
+
+html[data-theme='dark'] .alert-item {
+  background-color: #3a321d;
+  color: #f2d794;
+  border-color: #67562c;
+}
+
+html[data-theme='dark'] .alert-item.danger {
+  background-color: #40252b;
+  color: #ffb0b7;
+  border-color: #75424a;
+}
+
+html[data-theme='dark'] .formula-note {
+  background: #1d3b2e;
+  color: #b4e9c7;
+  border-color: #32644b;
+}

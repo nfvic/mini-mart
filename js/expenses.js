@@ -2,8 +2,8 @@
  * Expense management — operating expenses only (not inventory purchases)
  */
 
-document.addEventListener('DOMContentLoaded', () => {
-  if (!mmRequirePage('expenses', 'Expense Management')) return;
+document.addEventListener('DOMContentLoaded', async () => {
+  if (!(await mmPreparePage('expenses', 'Expense Management'))) return;
 
   document.getElementById('expenseCategoryFilter').innerHTML =
     '<option value="">All categories</option>' +
@@ -106,7 +106,7 @@ function openExpenseModal(id) {
   mmOpenModal('expenseModal');
 }
 
-function saveExpense(e) {
+async function saveExpense(e) {
   e.preventDefault();
   const id = document.getElementById('expenseId').value;
   const description = document.getElementById('expenseDescription').value.trim();
@@ -117,31 +117,33 @@ function saveExpense(e) {
   }
 
   const payload = {
-    id: id || mmGenerateId('exp'),
     description,
     category: document.getElementById('expenseCategory').value,
     amount,
     date: document.getElementById('expenseDate').value || mmTodayISO(),
     paymentMethod: document.getElementById('expensePayment').value
   };
+  if (id) payload.id = id;
 
-  const list = mmGetExpenses();
-  if (id) {
-    const idx = list.findIndex((x) => x.id === id);
-    list[idx] = payload;
-    mmShowToast('Expense updated.', 'success');
-  } else {
-    list.push(payload);
-    mmShowToast('Expense recorded.', 'success');
+  try {
+    const item = await mmPersist('expenses', payload, !id);
+    mmSaveExpenses(mmUpsert(mmGetExpenses(), item));
+    mmShowToast(id ? 'Expense updated.' : 'Expense recorded.', 'success');
+    mmCloseModal('expenseModal');
+    renderExpenses();
+  } catch (err) {
+    mmShowToast(err.message, 'error');
   }
-  mmSaveExpenses(list);
-  mmCloseModal('expenseModal');
-  renderExpenses();
 }
 
-function deleteExpense(id) {
+async function deleteExpense(id) {
   if (!mmConfirm('Delete this expense record?')) return;
-  mmSaveExpenses(mmGetExpenses().filter((e) => e.id !== id));
-  mmShowToast('Expense deleted.', 'success');
-  renderExpenses();
+  try {
+    await mmRemoveRecord('expenses', id);
+    mmSaveExpenses(mmGetExpenses().filter((e) => e.id !== id));
+    mmShowToast('Expense deleted.', 'success');
+    renderExpenses();
+  } catch (err) {
+    mmShowToast(err.message, 'error');
+  }
 }

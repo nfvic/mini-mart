@@ -140,7 +140,7 @@ function mmBuildShell(activeKey, pageTitle) {
         .join('')}
     </nav>
     <div class="sidebar-footer">
-      <div class="demo-note">Frontend demo · LocalStorage</div>
+      <div class="demo-note">MiniMart · PostgreSQL</div>
     </div>
   `;
 
@@ -153,6 +153,7 @@ function mmBuildShell(activeKey, pageTitle) {
       </div>
     </div>
     <div class="topbar-right">
+      <button type="button" class="icon-btn" id="themeToggle" data-theme-toggle aria-label="Toggle colour theme">${window.mmThemeIcon(document.documentElement.getAttribute('data-theme'))}</button>
       <div class="alert-badge-wrap" title="Stock alerts">
         <span class="icon-btn static">${mmIcon('bell')}</span>
         ${alertCount ? `<span class="badge-count">${alertCount}</span>` : ''}
@@ -183,8 +184,29 @@ function mmBuildShell(activeKey, pageTitle) {
   mmBindModalClosers();
 }
 
+async function mmPreparePage(pageKey, title) {
+  const user = await mmRestoreSession();
+  if (!user) {
+    window.location.href = 'login.html';
+    return null;
+  }
+  try {
+    await mmLoadWorkspace();
+  } catch (err) {
+    mmShowToast(err.message || 'Could not load the workspace.', 'error');
+    return null;
+  }
+  if (pageKey && !mmCanAccess(pageKey)) {
+    mmShowToast('Access denied for your role.', 'error');
+    window.location.href = 'dashboard.html';
+    return null;
+  }
+  mmBuildShell(pageKey, title);
+  return mmGetCurrentUser();
+}
+
 function mmRequirePage(pageKey, title) {
-  const user = mmRequireAuth();
+  const user = mmGetCurrentUser();
   if (!user) return null;
   if (!mmCanAccess(pageKey)) {
     mmShowToast('Access denied for your role.', 'error');
@@ -243,8 +265,9 @@ function mmSimpleBarChart(canvasId, labels, values, color) {
   const max = Math.max(...values, 1);
   const pad = 36;
   const barW = (w - pad * 2) / values.length - 10;
+  const dark = document.documentElement.getAttribute('data-theme') === 'dark';
 
-  ctx.strokeStyle = '#e2e8f0';
+  ctx.strokeStyle = dark ? '#344456' : '#e2e8f0';
   ctx.beginPath();
   ctx.moveTo(pad, h - pad);
   ctx.lineTo(w - 10, h - pad);
@@ -255,11 +278,11 @@ function mmSimpleBarChart(canvasId, labels, values, color) {
     const bh = ((h - pad * 2) * v) / max;
     const y = h - pad - bh;
     const grad = ctx.createLinearGradient(0, y, 0, h - pad);
-    grad.addColorStop(0, color || '#1e3a5f');
-    grad.addColorStop(1, '#2d6a4f');
+    grad.addColorStop(0, dark ? '#a7c7ff' : (color || '#1e3a5f'));
+    grad.addColorStop(1, dark ? '#80d7a4' : '#2d6a4f');
     ctx.fillStyle = grad;
     ctx.fillRect(x, y, barW, bh);
-    ctx.fillStyle = '#64748b';
+    ctx.fillStyle = document.documentElement.getAttribute('data-theme') === 'dark' ? '#a9b8c8' : '#64748b';
     ctx.font = '11px Segoe UI, sans-serif';
     ctx.textAlign = 'center';
     ctx.fillText(labels[i], x + barW / 2, h - pad + 14);
@@ -276,8 +299,9 @@ function mmSimpleLineChart(canvasId, labels, values, color) {
   const max = Math.max(...values, 1);
   const pad = 36;
   const step = values.length > 1 ? (w - pad * 2) / (values.length - 1) : 0;
+  const dark = document.documentElement.getAttribute('data-theme') === 'dark';
 
-  ctx.strokeStyle = '#e2e8f0';
+  ctx.strokeStyle = dark ? '#344456' : '#e2e8f0';
   ctx.beginPath();
   ctx.moveTo(pad, h - pad);
   ctx.lineTo(w - 10, h - pad);
@@ -290,18 +314,18 @@ function mmSimpleLineChart(canvasId, labels, values, color) {
     if (i === 0) ctx.moveTo(x, y);
     else ctx.lineTo(x, y);
   });
-  ctx.strokeStyle = color || '#2d6a4f';
+  ctx.strokeStyle = dark ? '#80d7a4' : (color || '#2d6a4f');
   ctx.lineWidth = 2.5;
   ctx.stroke();
 
   values.forEach((v, i) => {
     const x = pad + i * step;
     const y = h - pad - ((h - pad * 2) * v) / max;
-    ctx.fillStyle = color || '#2d6a4f';
+    ctx.fillStyle = dark ? '#80d7a4' : (color || '#2d6a4f');
     ctx.beginPath();
     ctx.arc(x, y, 3.5, 0, Math.PI * 2);
     ctx.fill();
-    ctx.fillStyle = '#64748b';
+    ctx.fillStyle = document.documentElement.getAttribute('data-theme') === 'dark' ? '#a9b8c8' : '#64748b';
     ctx.font = '11px Segoe UI, sans-serif';
     ctx.textAlign = 'center';
     ctx.fillText(labels[i], x, h - pad + 14);

@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Users · MiniMart</title>
+  <script src="js/theme.js"></script>
   <link rel="stylesheet" href="css/style.css" />
   <link rel="stylesheet" href="css/dashboard.css" />
   <link rel="stylesheet" href="css/responsive.css" />
@@ -15,7 +16,7 @@
       <header class="topbar" id="appTopbar"></header>
       <main class="content">
         <div class="alert alert-info">
-          User accounts are stored in LocalStorage for demonstration only. Role permissions hide menu items the role cannot access.
+          User accounts are stored in PostgreSQL. Passwords are hashed. Each role only sees the menu items it is allowed to use.
         </div>
         <div class="toolbar">
           <button type="button" class="btn btn-primary" id="btnAddUser">Add user</button>
@@ -74,7 +75,7 @@
             </div>
             <div class="form-group">
               <label for="userPassword">Password</label>
-              <input type="text" id="userPassword" class="form-control" required minlength="6" />
+              <input type="password" id="userPassword" class="form-control" minlength="6" autocomplete="new-password" placeholder="At least 6 characters" />
             </div>
           </div>
           <div class="grid grid-2">

@@ -20,8 +20,8 @@ const REPORT_TYPES = [
 let activeReport = 'daily';
 let lastExportRows = [];
 
-document.addEventListener('DOMContentLoaded', () => {
-  if (!mmRequirePage('reports', 'Reports & Analytics')) return;
+document.addEventListener('DOMContentLoaded', async () => {
+  if (!(await mmPreparePage('reports', 'Reports & Analytics'))) return;
 
   document.getElementById('reportFrom').value = mmDaysAgoISO(30);
   document.getElementById('reportTo').value = mmTodayISO();

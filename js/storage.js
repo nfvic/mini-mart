@@ -1,7 +1,6 @@
 /**
  * MiniMart Computerized Accounting System
- * LocalStorage data layer + sample Kenyan supermarket data
- * Frontend demonstration only — not production authentication or persistence.
+ * In-memory workspace loaded from the PHP API (Supabase PostgreSQL).
  */
 
 const MM_STORAGE_KEYS = {
@@ -47,7 +46,7 @@ const MM_ROLE_PERMISSIONS = {
     'suppliers', 'customers', 'expenses', 'accounting', 'reports',
     'users', 'settings', 'profile'
   ],
-  Cashier: ['dashboard', 'sales', 'customers', 'products', 'inventory', 'profile'],
+  Cashier: ['dashboard', 'sales', 'customers', 'profile'],
   Accountant: [
     'dashboard', 'accounting', 'reports', 'expenses', 'sales',
     'purchases', 'customers', 'suppliers', 'profile'
@@ -56,6 +55,36 @@ const MM_ROLE_PERMISSIONS = {
     'dashboard', 'products', 'inventory', 'purchases', 'suppliers', 'profile'
   ]
 };
+
+const MM_DEFAULT_SETTINGS = {
+  supermarketName: 'MiniMart Supermarket',
+  logoDataUrl: '',
+  currency: 'KES',
+  phone: '+254 712 345 678',
+  email: 'info@minimart.co.ke',
+  address: 'Moi Avenue, Nairobi, Kenya',
+  receiptFooter: 'Thank you for shopping at MiniMart! Karibu tena.',
+  taxRate: 0
+};
+
+const MM_STATE = {
+  settings: { ...MM_DEFAULT_SETTINGS },
+  products: [],
+  suppliers: [],
+  customers: [],
+  sales: [],
+  purchases: [],
+  expenses: [],
+  users: [],
+  user: null,
+  csrf: ''
+};
+
+try {
+  MM_STATE.csrf = sessionStorage.getItem('mm_csrf') || '';
+} catch (e) {
+  MM_STATE.csrf = '';
+}
 
 function mmGet(key, fallback) {
   try {
@@ -138,31 +167,110 @@ function mmFormatDateTime(iso) {
   });
 }
 
+function mmApiUrl(resource, query) {
+  const params = new URLSearchParams({ r: resource });
+  if (query) {
+    Object.keys(query).forEach((key) => {
+      if (query[key] !== undefined && query[key] !== null && query[key] !== '') {
+        params.set(key, String(query[key]));
+      }
+    });
+  }
+  return 'api/index.php?' + params.toString();
+}
+
+function mmRememberCsrf(token) {
+  if (!token) return;
+  MM_STATE.csrf = token;
+  try {
+    sessionStorage.setItem('mm_csrf', token);
+  } catch (e) {
+    /* session storage can be blocked; the in-memory token still works this tab */
+  }
+}
+
+async function mmApi(resource, options) {
+  const opts = options || {};
+  const method = String(opts.method || 'GET').toUpperCase();
+  const headers = { Accept: 'application/json' };
+  if (opts.body !== undefined) headers['Content-Type'] = 'application/json';
+  if (method !== 'GET' && method !== 'HEAD' && resource !== 'login') {
+    headers['X-CSRF-Token'] = MM_STATE.csrf || '';
+  }
+  let response;
+  try {
+    response = await fetch(mmApiUrl(resource, opts.query), {
+      method,
+      headers,
+      credentials: 'same-origin',
+      body: opts.body !== undefined ? JSON.stringify(opts.body) : undefined
+    });
+  } catch (e) {
+    throw new Error('Cannot reach the PHP API. Start the PHP server and open MiniMart from its address.');
+  }
+  let data = {};
+  try {
+    data = await response.json();
+  } catch (e) {
+    data = {};
+  }
+  if (data && data.csrf) mmRememberCsrf(data.csrf);
+  if (!response.ok || data.ok === false) {
+    throw new Error((data && data.error) || 'Request failed.');
+  }
+  return data;
+}
+
+function mmApplyWorkspace(data) {
+  MM_STATE.settings = { ...MM_DEFAULT_SETTINGS, ...(data.settings || {}) };
+  MM_STATE.products = data.products || [];
+  MM_STATE.suppliers = data.suppliers || [];
+  MM_STATE.customers = data.customers || [];
+  MM_STATE.sales = data.sales || [];
+  MM_STATE.purchases = data.purchases || [];
+  MM_STATE.expenses = data.expenses || [];
+  MM_STATE.users = data.users || [];
+  if (data.user) MM_STATE.user = data.user;
+}
+
+async function mmLoadWorkspace() {
+  const data = await mmApi('workspace');
+  mmApplyWorkspace(data);
+  return data;
+}
+
+async function mmPersist(resource, payload, creating) {
+  const data = await mmApi(resource, {
+    method: creating ? 'POST' : 'PUT',
+    body: payload
+  });
+  return data.item;
+}
+
+async function mmRemoveRecord(resource, id) {
+  await mmApi(resource, { method: 'DELETE', query: { id } });
+}
+
+function mmUpsert(list, item) {
+  return list.filter((row) => row.id !== item.id).concat([item]);
+}
+
 /* ---------- Settings ---------- */
 function mmGetSettings() {
-  return mmGet(MM_STORAGE_KEYS.SETTINGS, {
-    supermarketName: 'MiniMart Supermarket',
-    logoDataUrl: '',
-    currency: 'KES',
-    phone: '+254 712 345 678',
-    email: 'info@minimart.co.ke',
-    address: 'Moi Avenue, Nairobi, Kenya',
-    receiptFooter: 'Thank you for shopping at MiniMart! Karibu tena.',
-    taxRate: 0
-  });
+  return MM_STATE.settings || { ...MM_DEFAULT_SETTINGS };
 }
 
 function mmSaveSettings(settings) {
-  mmSet(MM_STORAGE_KEYS.SETTINGS, settings);
+  MM_STATE.settings = settings;
 }
 
 /* ---------- Users ---------- */
 function mmGetUsers() {
-  return mmGet(MM_STORAGE_KEYS.USERS, []);
+  return MM_STATE.users || [];
 }
 
 function mmSaveUsers(users) {
-  mmSet(MM_STORAGE_KEYS.USERS, users);
+  MM_STATE.users = users;
 }
 
 function mmGetUserById(id) {
@@ -177,11 +285,11 @@ function mmGetUserByUsername(username) {
 
 /* ---------- Products ---------- */
 function mmGetProducts() {
-  return mmGet(MM_STORAGE_KEYS.PRODUCTS, []);
+  return MM_STATE.products || [];
 }
 
 function mmSaveProducts(products) {
-  mmSet(MM_STORAGE_KEYS.PRODUCTS, products);
+  MM_STATE.products = products;
 }
 
 function mmGetProductById(id) {
@@ -199,44 +307,44 @@ function mmUpdateProductStock(productId, delta) {
 
 /* ---------- Suppliers / Customers ---------- */
 function mmGetSuppliers() {
-  return mmGet(MM_STORAGE_KEYS.SUPPLIERS, []);
+  return MM_STATE.suppliers || [];
 }
 
 function mmSaveSuppliers(suppliers) {
-  mmSet(MM_STORAGE_KEYS.SUPPLIERS, suppliers);
+  MM_STATE.suppliers = suppliers;
 }
 
 function mmGetCustomers() {
-  return mmGet(MM_STORAGE_KEYS.CUSTOMERS, []);
+  return MM_STATE.customers || [];
 }
 
 function mmSaveCustomers(customers) {
-  mmSet(MM_STORAGE_KEYS.CUSTOMERS, customers);
+  MM_STATE.customers = customers;
 }
 
 /* ---------- Sales / Purchases / Expenses ---------- */
 function mmGetSales() {
-  return mmGet(MM_STORAGE_KEYS.SALES, []);
+  return MM_STATE.sales || [];
 }
 
 function mmSaveSales(sales) {
-  mmSet(MM_STORAGE_KEYS.SALES, sales);
+  MM_STATE.sales = sales;
 }
 
 function mmGetPurchases() {
-  return mmGet(MM_STORAGE_KEYS.PURCHASES, []);
+  return MM_STATE.purchases || [];
 }
 
 function mmSavePurchases(purchases) {
-  mmSet(MM_STORAGE_KEYS.PURCHASES, purchases);
+  MM_STATE.purchases = purchases;
 }
 
 function mmGetExpenses() {
-  return mmGet(MM_STORAGE_KEYS.EXPENSES, []);
+  return MM_STATE.expenses || [];
 }
 
 function mmSaveExpenses(expenses) {
-  mmSet(MM_STORAGE_KEYS.EXPENSES, expenses);
+  MM_STATE.expenses = expenses;
 }
 
 /* ---------- Accounting helpers ---------- */
@@ -267,6 +375,8 @@ function mmCalcSaleTotals(sale) {
     revenue += Number(item.qty) * Number(item.sellingPrice);
     cogs += Number(item.qty) * Number(item.buyingPrice);
   });
+  const discount = Number(sale.discount || 0);
+  revenue = Math.max(0, revenue - discount);
   return { revenue, cogs, gross: revenue - cogs };
 }
 
@@ -773,12 +883,44 @@ function mmInitializeData(force) {
   return true;
 }
 
-function mmResetDemoData() {
-  Object.values(MM_STORAGE_KEYS).forEach((key) => {
-    if (key !== MM_STORAGE_KEYS.SESSION) mmRemove(key);
-  });
-  mmInitializeData(true);
+async function mmResetDemoData() {
+  await mmApi('seed', { method: 'POST', body: {} });
+  await mmLoadWorkspace();
 }
 
-// Auto-init on first load
-mmInitializeData(false);
+function mmBuildLegacyExport() {
+  const readList = (key) => {
+    const raw = localStorage.getItem(key);
+    if (raw === null) return [];
+    const value = JSON.parse(raw);
+    if (!Array.isArray(value)) throw new Error(`Legacy data "${key}" is not a list.`);
+    return value;
+  };
+  const rawSettings = localStorage.getItem(MM_STORAGE_KEYS.SETTINGS);
+  const settings = rawSettings ? JSON.parse(rawSettings) : undefined;
+  if (settings !== undefined && (!settings || Array.isArray(settings) || typeof settings !== 'object')) {
+    throw new Error('Legacy business settings are invalid.');
+  }
+  return {
+    format: 'minimart-localstorage-v1',
+    exportedAt: new Date().toISOString(),
+    products: readList(MM_STORAGE_KEYS.PRODUCTS),
+    suppliers: readList(MM_STORAGE_KEYS.SUPPLIERS),
+    customers: readList(MM_STORAGE_KEYS.CUSTOMERS),
+    sales: readList(MM_STORAGE_KEYS.SALES),
+    purchases: readList(MM_STORAGE_KEYS.PURCHASES),
+    expenses: readList(MM_STORAGE_KEYS.EXPENSES),
+    ...(settings ? { settings } : {})
+  };
+}
+
+function mmDownloadLegacyExport() {
+  const data = mmBuildLegacyExport();
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = `minimart-legacy-${mmTodayISO()}.json`;
+  link.click();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}

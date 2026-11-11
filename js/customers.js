@@ -4,8 +4,8 @@
 
 let selectedCustomerId = null;
 
-document.addEventListener('DOMContentLoaded', () => {
-  if (!mmRequirePage('customers', 'Customer Management')) return;
+document.addEventListener('DOMContentLoaded', async () => {
+  if (!(await mmPreparePage('customers', 'Customer Management'))) return;
 
   document.getElementById('customerSearch').addEventListener('input', renderCustomers);
   document.getElementById('btnAddCustomer').addEventListener('click', () => openCustomerModal());
@@ -114,7 +114,7 @@ function openCustomerModal(id) {
   mmOpenModal('customerModal');
 }
 
-function saveCustomer(e) {
+async function saveCustomer(e) {
   e.preventDefault();
   const id = document.getElementById('customerId').value;
   const name = document.getElementById('customerName').value.trim();
@@ -125,42 +125,45 @@ function saveCustomer(e) {
   }
 
   const payload = {
-    id: id || mmGenerateId('cust'),
     name,
     phone,
     email: document.getElementById('customerEmail').value.trim(),
-    address: document.getElementById('customerAddress').value.trim(),
-    isWalkIn: false
+    address: document.getElementById('customerAddress').value.trim()
   };
+  if (id) payload.id = id;
 
-  const list = mmGetCustomers();
-  if (id) {
-    const idx = list.findIndex((c) => c.id === id);
-    if (list[idx]?.isWalkIn) {
-      mmShowToast('Walk-in customer cannot be edited.', 'error');
-      return;
-    }
-    list[idx] = payload;
-    mmShowToast('Customer updated.', 'success');
-  } else {
-    list.push(payload);
-    mmShowToast('Customer registered.', 'success');
+  const existing = id ? mmGetCustomers().find((c) => c.id === id) : null;
+  if (existing?.isWalkIn) {
+    mmShowToast('Walk-in customer cannot be edited.', 'error');
+    return;
   }
-  mmSaveCustomers(list);
-  mmCloseModal('customerModal');
-  selectedCustomerId = payload.id;
-  renderCustomers();
+
+  try {
+    const item = await mmPersist('customers', payload, !id);
+    mmSaveCustomers(mmUpsert(mmGetCustomers(), item));
+    mmShowToast(id ? 'Customer updated.' : 'Customer registered.', 'success');
+    mmCloseModal('customerModal');
+    selectedCustomerId = item.id;
+    renderCustomers();
+  } catch (err) {
+    mmShowToast(err.message, 'error');
+  }
 }
 
-function deleteCustomer(id) {
+async function deleteCustomer(id) {
   const c = mmGetCustomers().find((x) => x.id === id);
   if (!c || c.isWalkIn) {
     mmShowToast('Walk-in customer cannot be deleted.', 'error');
     return;
   }
   if (!mmConfirm(`Delete customer "${c.name}"?`)) return;
-  mmSaveCustomers(mmGetCustomers().filter((x) => x.id !== id));
-  if (selectedCustomerId === id) selectedCustomerId = null;
-  mmShowToast('Customer deleted.', 'success');
-  renderCustomers();
+  try {
+    await mmRemoveRecord('customers', id);
+    mmSaveCustomers(mmGetCustomers().filter((x) => x.id !== id));
+    if (selectedCustomerId === id) selectedCustomerId = null;
+    mmShowToast('Customer deleted.', 'success');
+    renderCustomers();
+  } catch (err) {
+    mmShowToast(err.message, 'error');
+  }
 }

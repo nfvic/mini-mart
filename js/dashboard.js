@@ -1,9 +1,9 @@
 /**
- * Dashboard — dynamic stats from LocalStorage
+ * Dashboard — dynamic stats from the API workspace
  */
 
-document.addEventListener('DOMContentLoaded', () => {
-  const user = mmRequirePage('dashboard', 'Dashboard');
+document.addEventListener('DOMContentLoaded', async () => {
+  const user = await mmPreparePage('dashboard', 'Dashboard');
   if (!user) return;
   renderQuickActions(user);
   renderStats();
@@ -30,6 +30,13 @@ function renderStats() {
   const products = mmGetProducts();
   const expenses = mmGetExpenses();
   const purchases = mmGetPurchases();
+  const canSeePurchases = mmCanAccess('purchases');
+  const canSeeExpenses = mmCanAccess('expenses');
+  const canSeeFinancials = mmCanAccess('accounting') || mmCanAccess('reports');
+  const canSeeInventory = mmCanAccess('products')
+    || mmCanAccess('inventory')
+    || canSeePurchases
+    || canSeeFinancials;
 
   const salesToday = sales
     .filter((s) => mmIsSameDay(s.date, today))
@@ -42,16 +49,6 @@ function renderStats() {
   const purchaseTotal = purchases.reduce((sum, p) => sum + Number(p.total || 0), 0);
   const expenseTotal = expenses.reduce((sum, e) => sum + Number(e.amount || 0), 0);
 
-  let revenue = 0;
-  let cogs = 0;
-  sales.forEach((s) => {
-    const t = mmCalcSaleTotals(s);
-    revenue += t.revenue;
-    cogs += t.cogs;
-  });
-  const gross = revenue - cogs;
-  const net = gross - expenseTotal;
-
   const lowStock = products.filter(
     (p) => Number(p.stock) > 0 && Number(p.stock) <= Number(p.minStock)
   ).length;
@@ -59,13 +56,32 @@ function renderStats() {
   const cards = [
     { label: 'Total sales today', value: mmFormatMoney(salesToday), meta: 'Completed POS transactions' },
     { label: 'Total sales this month', value: mmFormatMoney(salesMonth), meta: new Date().toLocaleString('en-KE', { month: 'long', year: 'numeric' }) },
-    { label: 'Total purchases', value: mmFormatMoney(purchaseTotal), meta: purchases.length + ' purchase orders' },
-    { label: 'Total expenses', value: mmFormatMoney(expenseTotal), meta: 'Operating expenses only' },
-    { label: 'Total products', value: String(products.length), meta: 'SKU catalogue' },
-    { label: 'Low-stock products', value: String(lowStock), meta: 'Below minimum level' },
-    { label: 'Gross profit', value: mmFormatMoney(gross), meta: 'Revenue − COGS' },
-    { label: 'Net profit', value: mmFormatMoney(net), meta: 'Gross − operating expenses' }
+    ...(canSeeInventory ? [
+      { label: 'Total products', value: String(products.length), meta: 'SKU catalogue' },
+      { label: 'Low-stock products', value: String(lowStock), meta: 'Below minimum level' }
+    ] : [])
   ];
+  if (canSeePurchases) {
+    cards.push({ label: 'Total purchases', value: mmFormatMoney(purchaseTotal), meta: purchases.length + ' purchase orders' });
+  }
+  if (canSeeExpenses) {
+    cards.push({ label: 'Total expenses', value: mmFormatMoney(expenseTotal), meta: 'Operating expenses only' });
+  }
+  if (canSeeFinancials) {
+    let revenue = 0;
+    let cogs = 0;
+    sales.forEach((s) => {
+      const t = mmCalcSaleTotals(s);
+      revenue += t.revenue;
+      cogs += t.cogs;
+    });
+    const gross = revenue - cogs;
+    const net = gross - expenseTotal;
+    cards.push(
+      { label: 'Gross profit', value: mmFormatMoney(gross), meta: 'Revenue − COGS' },
+      { label: 'Net profit', value: mmFormatMoney(net), meta: 'Gross − operating expenses' }
+    );
+  }
 
   document.getElementById('statGrid').innerHTML = cards
     .map(
@@ -137,9 +153,9 @@ function renderFeeds() {
         .join('')
     : mmEmptyState('No sales yet.');
 
-  const purchases = [...mmGetPurchases()]
+  const purchases = mmCanAccess('purchases') ? [...mmGetPurchases()]
     .sort((a, b) => String(b.date).localeCompare(String(a.date)))
-    .slice(0, 5);
+    .slice(0, 5) : [];
 
   document.getElementById('recentPurchases').innerHTML = purchases.length
     ? purchases
@@ -156,9 +172,11 @@ function renderFeeds() {
         .join('')
     : mmEmptyState('No purchases yet.');
 
-  const alerts = mmGetProducts().filter(
+  const alerts = (mmCanAccess('products') || mmCanAccess('inventory') || mmCanAccess('purchases') || mmCanAccess('accounting') || mmCanAccess('reports'))
+    ? mmGetProducts().filter(
     (p) => Number(p.stock) <= Number(p.minStock)
-  );
+    )
+    : [];
 
   document.getElementById('lowStockAlerts').innerHTML = alerts.length
     ? alerts

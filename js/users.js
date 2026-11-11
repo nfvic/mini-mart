@@ -2,8 +2,8 @@
  * User management — Administrator only
  */
 
-document.addEventListener('DOMContentLoaded', () => {
-  if (!mmRequirePage('users', 'User Management')) return;
+document.addEventListener('DOMContentLoaded', async () => {
+  if (!(await mmPreparePage('users', 'User Management'))) return;
 
   document.getElementById('userRole').innerHTML = MM_ROLES.map(
     (r) => `<option value="${r}">${r}</option>`
@@ -81,7 +81,8 @@ function openUserModal(id) {
     document.getElementById('userFullName').value = u.fullName;
     document.getElementById('userUsername').value = u.username;
     document.getElementById('userRole').value = u.role;
-    document.getElementById('userPassword').value = u.password;
+    document.getElementById('userPassword').value = '';
+    document.getElementById('userPassword').placeholder = 'Leave blank to keep the current password';
     document.getElementById('userEmail').value = u.email || '';
     document.getElementById('userPhone').value = u.phone || '';
     document.getElementById('userActive').checked = u.active !== false;
@@ -89,15 +90,15 @@ function openUserModal(id) {
   mmOpenModal('userModal');
 }
 
-function saveUser(e) {
+async function saveUser(e) {
   e.preventDefault();
   const id = document.getElementById('userId').value;
   const username = document.getElementById('userUsername').value.trim();
   const password = document.getElementById('userPassword').value;
   const fullName = document.getElementById('userFullName').value.trim();
 
-  if (!username || !fullName || password.length < 6) {
-    mmShowToast('Provide name, username and password (min 6 characters).', 'error');
+  if (!username || !fullName || (!id && password.length < 6) || (password && password.length < 6)) {
+    mmShowToast('Provide a name, username and a password of at least 6 characters.', 'error');
     return;
   }
 
@@ -111,30 +112,31 @@ function saveUser(e) {
   }
 
   const payload = {
-    id: id || mmGenerateId('usr'),
     username,
-    password,
     fullName,
     role: document.getElementById('userRole').value,
     email: document.getElementById('userEmail').value.trim(),
     phone: document.getElementById('userPhone').value.trim(),
     active: document.getElementById('userActive').checked
   };
+  if (password) payload.password = password;
+  if (id) payload.id = id;
 
-  if (id) {
-    const idx = users.findIndex((u) => u.id === id);
-    users[idx] = payload;
-    mmShowToast('User updated.', 'success');
-  } else {
-    users.push(payload);
-    mmShowToast('User added.', 'success');
+  try {
+    const item = await mmPersist('users', payload, !id);
+    mmSaveUsers(mmUpsert(mmGetUsers(), item).sort((a, b) => a.fullName.localeCompare(b.fullName)));
+    if (mmGetCurrentUser() && mmGetCurrentUser().id === item.id) {
+      MM_STATE.user = { ...mmGetCurrentUser(), ...item, permissions: mmGetCurrentUser().permissions };
+    }
+    mmShowToast(id ? 'User updated.' : 'User added.', 'success');
+    mmCloseModal('userModal');
+    renderUsers();
+  } catch (err) {
+    mmShowToast(err.message, 'error');
   }
-  mmSaveUsers(users);
-  mmCloseModal('userModal');
-  renderUsers();
 }
 
-function deleteUser(id) {
+async function deleteUser(id) {
   const current = mmGetCurrentUser();
   if (current && current.id === id) {
     mmShowToast('You cannot delete your own logged-in account.', 'error');
@@ -143,7 +145,12 @@ function deleteUser(id) {
   const u = mmGetUserById(id);
   if (!u) return;
   if (!mmConfirm(`Delete user "${u.fullName}"?`)) return;
-  mmSaveUsers(mmGetUsers().filter((x) => x.id !== id));
-  mmShowToast('User deleted.', 'success');
-  renderUsers();
+  try {
+    await mmRemoveRecord('users', id);
+    mmSaveUsers(mmGetUsers().filter((x) => x.id !== id));
+    mmShowToast('User deleted.', 'success');
+    renderUsers();
+  } catch (err) {
+    mmShowToast(err.message, 'error');
+  }
 }

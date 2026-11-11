@@ -5,8 +5,8 @@
 let cart = [];
 let lastReceiptSale = null;
 
-document.addEventListener('DOMContentLoaded', () => {
-  const user = mmRequirePage('sales', 'Point of Sale');
+document.addEventListener('DOMContentLoaded', async () => {
+  const user = await mmPreparePage('sales', 'Point of Sale');
   if (!user) return;
 
   document.getElementById('paymentMethod').innerHTML = MM_PAYMENT_METHODS.map(
@@ -189,8 +189,9 @@ function nextReceiptNo() {
   return 'RCP-' + new Date().getFullYear() + '-' + String(n).padStart(4, '0');
 }
 
-function completeSale() {
+async function completeSale() {
   const user = mmGetCurrentUser();
+  const button = document.getElementById('btnCompleteSale');
   if (!cart.length) {
     mmShowToast('Cart is empty.', 'error');
     return;
@@ -212,49 +213,38 @@ function completeSale() {
     return;
   }
 
-  const customerId = document.getElementById('saleCustomer').value;
-  const customer = mmGetCustomers().find((c) => c.id === customerId);
-
-  const sale = {
-    id: mmGenerateId('sale'),
-    receiptNo: nextReceiptNo(),
-    customerId: customer ? customer.id : 'cust_walkin',
-    customerName: customer ? customer.name : 'Walk-in Customer',
-    cashierId: user.id,
-    cashierName: user.fullName,
-    date: mmTodayISO(),
-    createdAt: new Date().toISOString(),
-    paymentMethod: document.getElementById('paymentMethod').value,
-    amountPaid,
-    change: amountPaid - total,
-    status: 'completed',
-    items: cart.map((l) => ({
-      productId: l.productId,
-      productName: l.productName,
-      qty: l.qty,
-      buyingPrice: l.buyingPrice,
-      sellingPrice: l.sellingPrice
-    })),
-    subtotal: total,
-    total
-  };
-
-  // Decrease stock
-  sale.items.forEach((item) => mmUpdateProductStock(item.productId, -item.qty));
-
-  const sales = mmGetSales();
-  sales.push(sale);
-  mmSaveSales(sales);
-
-  lastReceiptSale = sale;
-  showReceipt(sale);
-
-  cart = [];
-  document.getElementById('amountPaid').value = '';
-  renderCart();
-  renderPicker();
-  renderSalesHistory();
-  mmShowToast('Sale completed successfully.', 'success');
+  const customerId = document.getElementById('saleCustomer').value || 'cust_walkin';
+  if (button) button.disabled = true;
+  try {
+    const data = await mmApi('sales', {
+      method: 'POST',
+      body: {
+        clientRequestId: mmGenerateId('req'),
+        customerId,
+        paymentMethod: document.getElementById('paymentMethod').value,
+        amountPaid,
+        discount: 0,
+        items: cart.map((line) => ({ productId: line.productId, qty: line.qty }))
+      }
+    });
+    if (data.products) mmSaveProducts(data.products);
+    const sale = data.item;
+    if (!sale) throw new Error('The sale was not returned by the server.');
+    mmSaveSales([sale].concat(mmGetSales().filter((row) => row.id !== sale.id)));
+    lastReceiptSale = sale;
+    showReceipt(sale);
+    cart = [];
+    document.getElementById('amountPaid').value = '';
+    renderCart();
+    renderPicker();
+    renderSalesHistory();
+    mmShowToast('Sale completed successfully.', 'success');
+  } catch (err) {
+    mmShowToast(err.message, 'error');
+  } finally {
+    if (button) button.disabled = false;
+  }
+  void user;
 }
 
 function showReceipt(sale) {
@@ -287,7 +277,7 @@ function showReceipt(sale) {
     <div class="right">Change: ${mmFormatMoney(sale.change)}</div>
     <hr/>
     <div class="center">${settings.receiptFooter || 'Thank you!'}</div>
-    <div class="center text-muted" style="font-size:11px;margin-top:8px">Demo receipt · LocalStorage</div>
+    <div class="center text-muted" style="font-size:11px;margin-top:8px">MiniMart receipt</div>
   `;
   mmOpenModal('receiptModal');
 }

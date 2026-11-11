@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Settings · MiniMart</title>
+  <script src="js/theme.js"></script>
   <link rel="stylesheet" href="css/style.css" />
   <link rel="stylesheet" href="css/dashboard.css" />
   <link rel="stylesheet" href="css/responsive.css" />
@@ -78,7 +79,19 @@
           <div class="card-header"><h3>Demonstration data</h3></div>
           <p class="text-muted">
             Reset restores the original Kenyan sample products, suppliers, customers, sales, purchases and expenses.
-            Your current LocalStorage demo data will be replaced.
+            Export any legacy browser data before resetting.
+          </p>
+          <div class="form-group">
+            <label for="legacyDataFile">Import legacy browser data (JSON export)</label>
+            <input type="file" id="legacyDataFile" class="form-control" accept="application/json,.json" />
+          </div>
+          <div class="toolbar">
+            <button type="button" class="btn btn-outline" id="btnExportLegacy">Export legacy browser data</button>
+            <button type="button" class="btn btn-secondary" id="btnImportLegacy">Import selected data</button>
+          </div>
+          <p class="text-muted">
+            Imports products, suppliers, customers, completed sales, purchases and expenses without applying historical stock movements again.
+            Existing database records are retained. User accounts and passwords are not imported.
           </p>
           <button type="button" class="btn btn-danger" id="btnResetDemo">Reset demonstration data</button>
         </div>

@@ -2,8 +2,8 @@
  * Product management
  */
 
-document.addEventListener('DOMContentLoaded', () => {
-  if (!mmRequirePage('products', 'Product Management')) return;
+document.addEventListener('DOMContentLoaded', async () => {
+  if (!(await mmPreparePage('products', 'Product Management'))) return;
 
   const catSelect = document.getElementById('categoryFilter');
   const formCat = document.getElementById('productCategory');
@@ -96,7 +96,7 @@ function openProductModal(id) {
   mmOpenModal('productModal');
 }
 
-function saveProduct(e) {
+async function saveProduct(e) {
   e.preventDefault();
   const id = document.getElementById('productId').value;
   const buying = Number(document.getElementById('buyingPrice').value);
@@ -125,7 +125,6 @@ function saveProduct(e) {
   }
 
   const payload = {
-    id: id || mmGenerateId('prd'),
     code,
     name,
     category: document.getElementById('productCategory').value,
@@ -135,25 +134,29 @@ function saveProduct(e) {
     minStock,
     unit: document.getElementById('productUnit').value.trim() || 'unit'
   };
+  if (id) payload.id = id;
 
-  if (id) {
-    const idx = products.findIndex((p) => p.id === id);
-    products[idx] = payload;
-    mmShowToast('Product updated.', 'success');
-  } else {
-    products.push(payload);
-    mmShowToast('Product added.', 'success');
+  try {
+    const item = await mmPersist('products', payload, !id);
+    mmSaveProducts(mmUpsert(mmGetProducts(), item).sort((a, b) => a.name.localeCompare(b.name)));
+    mmShowToast(id ? 'Product updated.' : 'Product added.', 'success');
+    mmCloseModal('productModal');
+    renderProducts();
+  } catch (err) {
+    mmShowToast(err.message, 'error');
   }
-  mmSaveProducts(products);
-  mmCloseModal('productModal');
-  renderProducts();
 }
 
-function deleteProduct(id) {
+async function deleteProduct(id) {
   const p = mmGetProductById(id);
   if (!p) return;
   if (!mmConfirm(`Delete product "${p.name}"? This cannot be undone.`)) return;
-  mmSaveProducts(mmGetProducts().filter((x) => x.id !== id));
-  mmShowToast('Product deleted.', 'success');
-  renderProducts();
+  try {
+    await mmRemoveRecord('products', id);
+    mmSaveProducts(mmGetProducts().filter((x) => x.id !== id));
+    mmShowToast('Product deleted.', 'success');
+    renderProducts();
+  } catch (err) {
+    mmShowToast(err.message, 'error');
+  }
 }
